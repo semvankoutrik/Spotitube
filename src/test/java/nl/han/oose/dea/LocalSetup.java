@@ -1,6 +1,9 @@
 package nl.han.oose.dea;
 
 import nl.han.oose.dea.domain.entities.User;
+import nl.han.oose.dea.persistence.daos.UserDao;
+import nl.han.oose.dea.persistence.exceptions.DatabaseException;
+import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -22,8 +25,12 @@ public class LocalSetup {
     }
 
     @Test
-    public void insertUsers() {
+    public void insertUsers() throws DatabaseException {
+        UserDao userDao = new UserDao();
 
+        for(User user : users) {
+            userDao.create(user);
+        }
     }
 
     @Test

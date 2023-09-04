@@ -34,11 +34,12 @@ public class DatabaseSetup {
         connection.prepareStatement("""
             CREATE TABLE users (
                 id VARCHAR(255) PRIMARY KEY,
-                name VARCHAR(255) NOT NULL
+                first_name VARCHAR(255) NOT NULL,
+                last_name VARCHAR(255) NOT NULL
             )
         """).execute();
         connection.prepareStatement("""
-            CREATE TABLE playlist (
+            CREATE TABLE playlists (
                 id VARCHAR(255) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 owner_id VARCHAR(255) NOT NULL,
