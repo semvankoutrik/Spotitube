@@ -1,5 +1,6 @@
 package nl.han.oose.dea;
 
+import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.daos.UserDao;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
@@ -35,6 +36,9 @@ public class LocalSetup {
 
     @Test
     public void insertPlaylists() {
+        Playlist playlist = new Playlist();
 
+        playlist.setName("Deja Vu");
+        playlist.setOwner(users.get(0));
     }
 }

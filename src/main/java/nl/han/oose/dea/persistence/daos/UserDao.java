@@ -1,7 +1,8 @@
 package nl.han.oose.dea.persistence.daos;
 
+import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.User;
-import nl.han.oose.dea.persistence.constants.ColumnTypes;
+import nl.han.oose.dea.persistence.constants.RelationType;
 import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
 
@@ -12,9 +13,18 @@ public class UserDao extends BaseDao<User> {
     public UserDao() {
         super(TableNames.USERS, Logger.getLogger(UserDao.class.getName()));
 
-        properties.add(new Property<>("id", ColumnTypes.VALUE, (user, id) -> user.setId((String) id), (User::getId)));
-        properties.add(new Property<>("first_name", ColumnTypes.VALUE, (user, firstName) -> user.setFirstName((String) firstName), (User::getFirstName)));
-        properties.add(new Property<>("last_name", ColumnTypes.VALUE, (user, lastName) -> user.setLastName((String) lastName), (User::getLastName)));
+        properties.add(new Property<User>("id")
+                .setSetter((user, id) -> user.setId((String) id))
+                .setGetter(User::getId)
+        );
+        properties.add(new Property<User>("first_name")
+                .setSetter((user, firstName) -> user.setFirstName((String) firstName))
+                .setGetter(User::getFirstName)
+        );
+        properties.add(new Property<User>("last_name")
+                .setSetter((user, firstName) -> user.setFirstName((String) firstName))
+                .setGetter(User::getFirstName)
+        );
     }
 
     @Override

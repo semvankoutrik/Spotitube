@@ -46,5 +46,27 @@ public class DatabaseSetup {
                 CONSTRAINT fk_user FOREIGN KEY(owner_id) REFERENCES users(id)
             )
         """).execute();
+        connection.prepareStatement("""
+            CREATE TABLE tracks (
+                id VARCHAR(255) PRIMARY KEY,
+                performer VARCHAR(255) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                url VARCHAR(255) NOT NULL,
+                duration int NOT NULL,
+                album VARCHAR(255),
+                play_count int,
+                publication_date DATE,
+                description VARCHAR(255),
+                offline BOOLEAN
+            )
+        """).execute();
+        connection.prepareStatement("""
+            CREATE TABLE playlist_tracks (
+                playlist_id VARCHAR(255) NOT NULL,
+                track_id VARCHAR(255) NOT NULL,
+                CONSTRAINT fk_playlist FOREIGN KEY(track_id) REFERENCES playlist(id)
+                CONSTRAINT fk_track FOREIGN KEY(playlist_id) REFERENCES tracks(id)
+            )
+        """).execute();
     }
 }

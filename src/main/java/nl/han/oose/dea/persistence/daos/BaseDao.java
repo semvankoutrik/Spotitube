@@ -3,7 +3,7 @@ package nl.han.oose.dea.persistence.daos;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.RequestScoped;
 import nl.han.oose.dea.domain.shared.BaseEntity;
-import nl.han.oose.dea.persistence.constants.ColumnTypes;
+import nl.han.oose.dea.persistence.constants.RelationType;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
@@ -25,6 +25,7 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
     private final Connection connection;
     protected List<Property<T>> properties = new ArrayList<>();
     protected final Logger logger;
+
     protected abstract Supplier<T> entityFactory();
 
     public BaseDao(String tableName, Logger logger) {
@@ -33,13 +34,19 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
         this.connection = DatabaseConnection.create();
     }
 
+    private List<Property<T>> getColumns() {
+        return properties.stream().filter(p -> {
+            return p.getRelationType() == null ||
+                    p.getRelationType() == RelationType.ONE_TO_ONE ||
+                    p.getRelationType() == RelationType.MANY_TO_ONE;
+        }).toList();
+    }
 
     @Override
     public T get(String id) throws NotFoundException, DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ?");
-            statement.setString(1, tableName);
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + tableName);
 
             ResultSet resultSet = statement.executeQuery();
             boolean found = resultSet.next();
@@ -61,30 +68,32 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
     @Override
     public T create(T entity) throws DatabaseException {
         try {
+            List<Property<T>> columns = getColumns();
+
             // INSERT INTO ? (column1, column2, column3
             StringBuilder queryBuilder = new StringBuilder("INSERT INTO " + tableName + " (");
-            String columnNames = properties.stream().map(Object::toString).collect(Collectors.joining(", "));
+            String columnNames = columns.stream().map(Property::getName).collect(Collectors.joining(", "));
             queryBuilder.append(columnNames);
 
             // INSERT INTO ? (column1, column2, column3) VALUES (?, ?, ?)
             queryBuilder.append(") VALUES (");
-            String values = String.join(", ", Collections.nCopies(properties.size(), "?"));
+            String values = String.join(", ", Collections.nCopies(columns.size(), "?"));
             queryBuilder.append(values);
             queryBuilder.append(")");
 
             // Prepare statement
             PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
 
-            // Set parameters
-
+            // Set columns
             int index = 1;
-            for (Property<T> property : properties) {
-                ColumnTypes columnType = property.type();
-                Object value = property.getter().apply(entity);
+            for (Property<T> property : getColumns()) {
+                Object value = property.getGetter().apply(entity);
 
-                if(columnType == ColumnTypes.VALUE || columnType == ColumnTypes.TO_ONE) {
-                    setStatementParameter(statement, value, index, property.name());
+                if (property.getName().equals("id")) {
+                    value = UUID.randomUUID().toString();
                 }
+
+                setStatementParameter(statement, index, value);
 
                 index++;
             }
@@ -105,13 +114,53 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
         }
     }
 
-    public void setStatementParameter(PreparedStatement statement, Object value, int index, String columnName) throws SQLException, DataTypeNotSupportedException {
-        if (value == null) {
-            if (columnName.equals("id")) {
-                statement.setString(index, UUID.randomUUID().toString());
-            } else {
-                statement.setNull(index, Types.NULL);
+    @Override
+    public T update(T entity) throws DatabaseException {
+        try {
+            List<Property<T>> columns = getColumns();
+
+            // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
+            StringBuilder queryBuilder = new StringBuilder("UPDATE " + tableName + " SET ");
+            String placeholders = columns.stream().map(Property::getName).collect(Collectors.joining(" = ?, "));
+            queryBuilder.append(placeholders);
+            queryBuilder.append(" WHERE id = ?");
+
+            // Prepare statement
+            PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
+
+            // Set columns
+            int index = 1;
+            for (Property<T> property : columns) {
+                Object value = property.getGetter().apply(entity);
+
+                if (!property.getName().equals("id")) {
+                    setStatementParameter(statement, index, value);
+                }
+
+                index++;
             }
+
+            setStatementParameter(statement, index, entity.getId());
+
+            // Execute and close.
+            statement.execute();
+            statement.close();
+
+            return entity;
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Something went wrong saving the data.", e);
+
+            throw new DatabaseException();
+        } catch (DataTypeNotSupportedException e) {
+            logger.log(Level.SEVERE, "Data-type not supported: " + e.getDataType());
+
+            throw new DatabaseException();
+        }
+    }
+
+    public void setStatementParameter(PreparedStatement statement, int index, Object value) throws SQLException, DataTypeNotSupportedException {
+        if (value == null) {
+            statement.setNull(index, Types.NULL);
         } else if (value instanceof String) {
             statement.setString(index, (String) value);
         } else if (value instanceof Integer) {
@@ -132,9 +181,9 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
 
         properties.forEach((property) -> {
             try {
-                Object value = resultSet.getObject(property.name());
+                Object value = resultSet.getObject(property.getName());
 
-                property.setter().accept(entity, value);
+                property.getSetter().accept(entity, value);
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Error mapping the result set to entity.", e);
 

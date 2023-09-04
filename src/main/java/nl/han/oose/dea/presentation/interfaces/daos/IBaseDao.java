@@ -10,6 +10,8 @@ public interface IBaseDao<T extends BaseEntity> {
 
     T create(T entity) throws NotFoundException, DatabaseException;
 
+    T update(T entity) throws DatabaseException;
+
     @PreDestroy
     void cleanup();
 }
