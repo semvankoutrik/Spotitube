@@ -25,7 +25,6 @@ public class PlaylistResource {
     @Path("{id}")
     @Produces("application/json")
     public String get(@PathParam("id") String id) {
-        logger.log(Level.SEVERE, "GET /playlist/{id} received.");
         return id;
     }
 }

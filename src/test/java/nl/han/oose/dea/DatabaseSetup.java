@@ -6,8 +6,14 @@ import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class SeedTest {
+public class DatabaseSetup {
     Connection connection = DatabaseConnection.create();
+
+    @Test
+    public void resetDatabase() throws SQLException {
+        dropTables();
+        createTables();
+    }
 
     @Test
     public void dropTables() throws SQLException {
@@ -20,7 +26,7 @@ public class SeedTest {
     public void truncateTables() throws SQLException {
         connection.prepareStatement("DELETE FROM tracks").execute();
         connection.prepareStatement("DELETE FROM playlist").execute();
-        connection.prepareStatement("DELETE FROM tracks").execute();
+        connection.prepareStatement("DELETE FROM users").execute();
     }
 
     @Test
