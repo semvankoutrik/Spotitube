@@ -4,6 +4,8 @@ import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
 
+import java.util.function.Supplier;
+
 public class TrackConfiguration extends TableConfigurationBase<Track> {
     public TrackConfiguration() {
         super(TableNames.TRACKS);
@@ -26,4 +28,8 @@ public class TrackConfiguration extends TableConfigurationBase<Track> {
         );
     }
 
+    @Override
+    protected Supplier<Track> entityFactory() {
+        return Track::new;
+    }
 }

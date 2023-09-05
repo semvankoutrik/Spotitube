@@ -14,7 +14,7 @@ public class Relation<TProperty extends EntityBase, TRelation extends EntityBase
     private String linkColumn;
     private String foreignLinkColumn;
     private final RelationTypes type;
-    private ITableConfiguration<TRelation> foreignTableConfiguration;
+    private final ITableConfiguration<TRelation> foreignTableConfiguration;
 
     public Relation(String name, String foreignTable, String foreignColumn, RelationTypes type, ITableConfiguration<TRelation> foreignTableConfiguration) {
         super(name);
@@ -125,5 +125,9 @@ public class Relation<TProperty extends EntityBase, TRelation extends EntityBase
         super.setIgnoreIfNull(ignoreIfNull);
 
         return this;
+    }
+
+    public ITableConfiguration<TRelation> getForeignTableConfiguration() {
+        return foreignTableConfiguration;
     }
 }

@@ -8,6 +8,7 @@ import nl.han.oose.dea.persistence.shared.Relation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class UserConfiguration extends TableConfigurationBase<User> {
     public UserConfiguration() {
@@ -29,5 +30,10 @@ public class UserConfiguration extends TableConfigurationBase<User> {
                 .setSetter((user, lastName) -> user.setLastName((String) lastName))
                 .setGetter(User::getLastName)
         );
+    }
+
+    @Override
+    protected Supplier<User> entityFactory() {
+        return User::new;
     }
 }

@@ -4,6 +4,7 @@ import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
 
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,5 @@ public interface ITableConfiguration<T extends EntityBase> {
     List<Property<T>> getColumns();
     List<Relation<T, ?>> getRelations();
     Optional<Relation<T, ?>> getRelation(String name);
+    T mapResultSetToEntity(ResultSet resultSet);
 }

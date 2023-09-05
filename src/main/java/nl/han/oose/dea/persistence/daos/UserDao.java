@@ -10,9 +10,4 @@ public class UserDao extends DaoBase<User> {
     public UserDao() {
         super(new UserConfiguration(), Logger.getLogger(UserDao.class.getName()));
     }
-
-    @Override
-    protected Supplier<User> entityFactory() {
-        return User::new;
-    }
 }

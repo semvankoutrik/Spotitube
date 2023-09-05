@@ -7,8 +7,8 @@ import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
     public PlaylistConfiguration() {
@@ -35,5 +35,10 @@ public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
                 .setGetter(Playlist::getTracks)
                 .setIgnoreIfNull(true)
         );
+    }
+
+    @Override
+    protected Supplier<Playlist> entityFactory() {
+        return Playlist::new;
     }
 }

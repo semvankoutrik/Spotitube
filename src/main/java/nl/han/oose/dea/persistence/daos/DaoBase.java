@@ -4,19 +4,17 @@ import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.RequestScoped;
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
+import nl.han.oose.dea.persistence.constants.RelationTypes;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
-import nl.han.oose.dea.persistence.utils.DatabaseConnection;
-import nl.han.oose.dea.persistence.utils.Filter;
-import nl.han.oose.dea.persistence.utils.PreparedStatementHelper;
+import nl.han.oose.dea.persistence.utils.*;
 import nl.han.oose.dea.presentation.interfaces.daos.IBaseDao;
 
 import java.sql.*;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -25,12 +23,9 @@ import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setState
 
 @RequestScoped
 public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
+    protected final Logger logger;
     private final ITableConfiguration<T> tableConfig;
     private final Connection connection;
-    protected final Logger logger;
-
-    protected abstract Supplier<T> entityFactory();
-
     private final List<String> includes = new ArrayList<>();
 
     public DaoBase(ITableConfiguration<T> tableConfig, Logger logger) {
@@ -49,29 +44,15 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
     public List<T> get() throws DatabaseException {
         try {
-            StringBuilder query = new StringBuilder("SELECT *");
-
-            if (!includes.isEmpty()) {
-                for (String relation : includes) {
-                    Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relation);
-
-                    if (relationProperty.isEmpty()) throw new NullPointerException();
-
-//                    relationProperty.get()
-                }
-            }
-
-            query.append(" FROM \"" + tableConfig.getName() + "\" ");
-
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement(query.toString());
+            PreparedStatement statement = connection.prepareStatement(selectQuery());
 
             ResultSet resultSet = statement.executeQuery();
 
             List<T> entities = new ArrayList<>();
 
             while (resultSet.next()) {
-                entities.add(mapToEntity(resultSet));
+                entities.add(tableConfig.mapResultSetToEntity(resultSet));
             }
 
             statement.close();
@@ -84,10 +65,18 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         }
     }
 
+    public T get(String id) throws NotFoundException, DatabaseException {
+        Optional<T> entity = get(Filters.equal("id", id)).stream().findFirst();
+
+        if(entity.isEmpty()) throw new NotFoundException();
+
+        return entity.get();
+    }
+
     public List<T> get(Filter filter) throws DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM \"" + tableConfig.getName() + "\" " + filter.toQuery());
+            PreparedStatement statement = connection.prepareStatement(selectQuery() + " " + filter.toQuery());
 
             filter.setStatementParameters(statement, 1);
 
@@ -96,7 +85,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             List<T> entities = new ArrayList<>();
 
             while (resultSet.next()) {
-                entities.add(mapToEntity(resultSet));
+                entities.add(tableConfig.mapResultSetToEntity(resultSet));
             }
 
             statement.close();
@@ -110,32 +99,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             logger.log(Level.SEVERE, "Given data-type not supported.", e);
 
             throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public T get(String id) throws NotFoundException, DatabaseException {
-        try {
-            StringBuilder query = new StringBuilder("SELECT * FROM \"" + tableConfig.getName() + "\" WHERE \"" + tableConfig.getName() + "\".\"id\" = ?");
-
-            // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement(query.toString());
-            statement.setString(1, id);
-
-            ResultSet resultSet = statement.executeQuery();
-            boolean found = resultSet.next();
-
-            if (!found) throw new NotFoundException();
-
-            T entity = mapToEntity(resultSet);
-
-            statement.close();
-
-            return entity;
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
-
-            throw new DatabaseException();
         }
     }
 
@@ -232,24 +195,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         }
     }
 
-    private T mapToEntity(ResultSet resultSet) {
-        T entity = entityFactory().get();
-
-        tableConfig.getColumns().forEach((property) -> {
-            try {
-                Object value = resultSet.getObject(property.getName());
-
-                property.getSetter().accept(entity, value);
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Error mapping the result set to entity.", e);
-
-                throw new RuntimeException(e);
-            }
-        });
-
-        return entity;
-    }
-
     @Override
     @PreDestroy
     public void cleanup() {
@@ -259,5 +204,47 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Could not close database-connection.", e);
         }
+    }
+
+    private String selectQuery() {
+        StringBuilder query = new StringBuilder("SELECT ");
+
+        query.append(QueryHelper.propertiesToQuery(tableConfig.getName(), tableConfig.getProperties()));
+
+        if (!includes.isEmpty()) {
+            for (String relation : includes) {
+                Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relation);
+
+                if (relationProperty.isEmpty()) throw new NullPointerException();
+
+                String tableName = relationProperty.get().getForeignTable();
+
+                query.append(", ");
+
+                query.append(QueryHelper.propertiesToQuery(tableName, relationProperty.get().getForeignTableConfiguration().getProperties()));
+            }
+        }
+
+        query.append(" FROM \"").append(tableConfig.getName()).append("\" ");
+
+        if (!includes.isEmpty()) {
+            for (String relation : includes) {
+                Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relation);
+
+                if (relationProperty.isEmpty()) throw new NullPointerException();
+
+                if (relationProperty.get().getType() == RelationTypes.HAS_MANY_THROUGH) {
+                    query.append(" LEFT JOIN \"").append(relationProperty.get().getLinkTable()).append("\" ");
+                    query.append(" ON \"").append(relationProperty.get().getLinkTable()).append("\".\"").append(relationProperty.get().getLinkColumn()).append("\"");
+                    query.append(" = \"").append(tableConfig.getName()).append("\".\"").append("id\" ");
+
+                    query.append(" LEFT JOIN \"").append(relationProperty.get().getForeignTable()).append("\" ");
+                    query.append(" ON \"").append(relationProperty.get().getLinkTable()).append("\".\"").append(relationProperty.get().getForeignLinkColumn()).append("\"");
+                    query.append(" = \"").append(relationProperty.get().getForeignTable()).append("\".\"").append(relationProperty.get().getForeignColumn()).append("\" ");
+                }
+            }
+        }
+
+        return query.toString();
     }
 }

@@ -14,15 +14,10 @@ public class PlaylistDao extends DaoBase<Playlist> implements IPlaylistDao {
         super(new PlaylistConfiguration(), Logger.getLogger(PlaylistDao.class.getName()));
     }
 
-//    @Override
-//    public List<Playlist> get() throws DatabaseException {
-//        include("tracks");
-//
-//        return super.get();
-//    }
-
     @Override
-    protected Supplier<Playlist> entityFactory() {
-        return Playlist::new;
+    public List<Playlist> get() throws DatabaseException {
+        include("tracks");
+
+        return super.get();
     }
 }
