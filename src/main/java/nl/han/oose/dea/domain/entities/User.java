@@ -1,10 +1,13 @@
 package nl.han.oose.dea.domain.entities;
 
-import nl.han.oose.dea.domain.shared.BaseEntity;
+import nl.han.oose.dea.domain.shared.EntityBase;
 
-public class User extends BaseEntity {
+import java.util.List;
+
+public class User extends EntityBase {
     private String firstName;
     private String lastName;
+    private List<Playlist> playlists;
 
     public String getFirstName() {
         return firstName;
@@ -20,5 +23,13 @@ public class User extends BaseEntity {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public List<Playlist> getPlaylists() {
+        return playlists;
+    }
+
+    public void setPlaylists(List<Playlist> playlists) {
+        this.playlists = playlists;
     }
 }

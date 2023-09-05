@@ -1,15 +1,16 @@
 package nl.han.oose.dea.persistence.shared;
 
-import nl.han.oose.dea.persistence.constants.RelationType;
+import nl.han.oose.dea.persistence.constants.RelationTypes;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class Property<T> {
+public class Property<TEntity> {
     private final String name;
-    private RelationType relationType;
-    private BiConsumer<T, Object> setter;
-    private Function<T, Object> getter;
+    private RelationTypes relationType;
+    private BiConsumer<TEntity, Object> setter;
+    private Function<TEntity, Object> getter;
+    private Relation relation;
 
     public Property(String name) {
         this.name = name;
@@ -19,32 +20,42 @@ public class Property<T> {
         return name;
     }
 
-    public RelationType getRelationType() {
+    public RelationTypes getRelationType() {
         return relationType;
     }
 
-    public Property<T> setRelationType(RelationType relationType) {
+    public Property<TEntity> setRelationType(RelationTypes relationType) {
         this.relationType = relationType;
 
         return this;
     }
 
-    public BiConsumer<T, Object> getSetter() {
+    public BiConsumer<TEntity, Object> getSetter() {
         return setter;
     }
 
-    public Property<T> setSetter(BiConsumer<T, Object> setter) {
+    public Property<TEntity> setSetter(BiConsumer<TEntity, Object> setter) {
         this.setter = setter;
 
         return this;
     }
 
-    public Function<T, Object> getGetter() {
+    public Function<TEntity, Object> getGetter() {
         return getter;
     }
 
-    public Property<T> setGetter(Function<T, Object> getter) {
+    public Property<TEntity> setGetter(Function<TEntity, Object> getter) {
         this.getter = getter;
+
+        return this;
+    }
+
+    public Relation getRelation() {
+        return relation;
+    }
+
+    public Property<TEntity> setRelation(Relation relation) {
+        this.relation = relation;
 
         return this;
     }

@@ -2,8 +2,9 @@ package nl.han.oose.dea.persistence.daos;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.RequestScoped;
-import nl.han.oose.dea.domain.shared.BaseEntity;
-import nl.han.oose.dea.persistence.constants.RelationType;
+import nl.han.oose.dea.domain.shared.EntityBase;
+import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
+import nl.han.oose.dea.persistence.constants.RelationTypes;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
@@ -20,33 +21,31 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RequestScoped
-public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
-    private final String tableName;
+public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
+    private final ITableConfiguration<T> tableConfig;
     private final Connection connection;
-    protected List<Property<T>> properties = new ArrayList<>();
     protected final Logger logger;
 
     protected abstract Supplier<T> entityFactory();
 
-    public BaseDao(String tableName, Logger logger) {
-        this.tableName = tableName;
+    public DaoBase(ITableConfiguration<T> tableConfig, Logger logger) {
+        this.tableConfig = tableConfig;
         this.logger = logger;
         this.connection = DatabaseConnection.create();
     }
 
     private List<Property<T>> getColumns() {
-        return properties.stream().filter(p -> {
-            return p.getRelationType() == null ||
-                    p.getRelationType() == RelationType.ONE_TO_ONE ||
-                    p.getRelationType() == RelationType.MANY_TO_ONE;
-        }).toList();
+        return tableConfig.getProperties().stream().filter(p -> p.getRelationType() == null || p.getRelationType() == RelationTypes.HAS_ONE).toList();
     }
 
     @Override
     public T get(String id) throws NotFoundException, DatabaseException {
         try {
+            StringBuilder query = new StringBuilder("SELECT * FROM [" + tableConfig.getName() + "] WHERE [" + tableConfig.getName() + "].[id] = ?");
+
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + tableName);
+            PreparedStatement statement = connection.prepareStatement(query.toString());
+            statement.setString(1, id);
 
             ResultSet resultSet = statement.executeQuery();
             boolean found = resultSet.next();
@@ -66,12 +65,12 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
     }
 
     @Override
-    public T create(T entity) throws DatabaseException {
+    public T insert(T entity) throws DatabaseException {
         try {
             List<Property<T>> columns = getColumns();
 
             // INSERT INTO ? (column1, column2, column3
-            StringBuilder queryBuilder = new StringBuilder("INSERT INTO " + tableName + " (");
+            StringBuilder queryBuilder = new StringBuilder("INSERT INTO " + tableConfig.getName() + " (");
             String columnNames = columns.stream().map(Property::getName).collect(Collectors.joining(", "));
             queryBuilder.append(columnNames);
 
@@ -120,7 +119,7 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
             List<Property<T>> columns = getColumns();
 
             // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
-            StringBuilder queryBuilder = new StringBuilder("UPDATE " + tableName + " SET ");
+            StringBuilder queryBuilder = new StringBuilder("UPDATE " + tableConfig.getName() + " SET ");
             String placeholders = columns.stream().map(Property::getName).collect(Collectors.joining(" = ?, "));
             queryBuilder.append(placeholders);
             queryBuilder.append(" WHERE id = ?");
@@ -179,7 +178,7 @@ public abstract class BaseDao<T extends BaseEntity> implements IBaseDao<T> {
     private T mapToEntity(ResultSet resultSet) {
         T entity = entityFactory().get();
 
-        properties.forEach((property) -> {
+        tableConfig.getProperties().forEach((property) -> {
             try {
                 Object value = resultSet.getObject(property.getName());
 

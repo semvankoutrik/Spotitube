@@ -1,4 +1,4 @@
-package nl.han.oose.dea.presentation.resources;
+package nl.han.oose.dea.presentation.resources.health;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

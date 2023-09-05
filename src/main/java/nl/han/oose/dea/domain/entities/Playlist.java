@@ -1,8 +1,8 @@
 package nl.han.oose.dea.domain.entities;
 
-import nl.han.oose.dea.domain.shared.BaseEntity;
+import nl.han.oose.dea.domain.shared.EntityBase;
 
-public class Playlist extends BaseEntity {
+public class Playlist extends EntityBase {
     private String name;
     private User owner;
 

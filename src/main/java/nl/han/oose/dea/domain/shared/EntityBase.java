@@ -1,9 +1,9 @@
 package nl.han.oose.dea.domain.shared;
 
-public abstract class BaseEntity {
+public abstract class EntityBase {
     private String id;
 
-    public BaseEntity() {
+    public EntityBase() {
 
     }
 
