@@ -15,6 +15,10 @@ public class AuthenticatedUser {
         }
     }
 
+    public String getId() {
+        return id;
+    }
+
     public Object getClaim(String type) {
         return claims.get(type);
     }

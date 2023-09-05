@@ -12,8 +12,11 @@ import nl.han.oose.dea.persistence.daos.PlaylistDao;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
+import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistResponse;
+import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistsResponse;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 @Path("/playlists")
@@ -35,7 +38,7 @@ public class PlaylistsResource extends ResourceBase {
         {
             Playlist playlist = playlistDao.get(id);
 
-            return ok(playlist);
+            return ok(GetPlaylistResponse.fromEntity(playlist, getUser().getId()));
         }
         catch (DatabaseException e)
         {
@@ -44,6 +47,22 @@ public class PlaylistsResource extends ResourceBase {
         catch (NotFoundException e)
         {
             return notFound();
+        }
+    }
+
+    @GET
+    @Path("/")
+    @Produces("application/json")
+    public Response getAll() {
+        try
+        {
+            List<Playlist> playlist = playlistDao.get();
+
+            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
+        }
+        catch (DatabaseException e)
+        {
+            return internalServerError();
         }
     }
 }

@@ -41,6 +41,29 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         return tableConfig.getProperties().stream().filter(p -> p.getRelationType() == null || p.getRelationType() == RelationTypes.HAS_ONE).toList();
     }
 
+    public List<T> get() throws DatabaseException {
+        try {
+            // Create and execute statement.
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM \"" + tableConfig.getName() + "\"");
+
+            ResultSet resultSet = statement.executeQuery();
+
+            List<T> entities = new ArrayList<>();
+
+            while(resultSet.next()) {
+                entities.add(mapToEntity(resultSet));
+            }
+
+            statement.close();
+
+            return entities;
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
+
+            throw new DatabaseException();
+        }
+    }
+
     public List<T> get(Filter filter) throws DatabaseException {
         try {
             // Create and execute statement.
