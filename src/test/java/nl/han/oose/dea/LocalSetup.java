@@ -8,6 +8,7 @@ import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.utils.DataSuppliers;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,19 +18,23 @@ public class LocalSetup {
     public LocalSetup() {
         User user1 = new User();
         user1.setId(DataSuppliers.UUIDString.get());
+        user1.setUsername("semvankoutrik");
         user1.setFirstName("Sem");
         user1.setLastName("van Koutrik");
         users.add(user1);
 
         User user2 = new User();
         user1.setId(DataSuppliers.UUIDString.get());
+        user2.setUsername("samvankoetrik");
         user2.setFirstName("Sam");
         user2.setLastName("van Koetrik");
         users.add(user2);
     }
 
     @Test
-    public void seedAll() throws DatabaseException {
+    public void seedAll() throws DatabaseException, SQLException {
+        new DatabaseSetup().truncateTables();
+
         insertUsers();
         insertPlaylists();
     }

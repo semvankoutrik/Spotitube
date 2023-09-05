@@ -17,6 +17,7 @@ public class DatabaseSetup {
 
     @Test
     public void dropTables() throws SQLException {
+        connection.prepareStatement("DROP TABLE IF EXISTS playlist_tracks").execute();
         connection.prepareStatement("DROP TABLE IF EXISTS tracks").execute();
         connection.prepareStatement("DROP TABLE IF EXISTS playlists").execute();
         connection.prepareStatement("DROP TABLE IF EXISTS users").execute();
@@ -24,6 +25,7 @@ public class DatabaseSetup {
 
     @Test
     public void truncateTables() throws SQLException {
+        connection.prepareStatement("DELETE FROM playlist_tracks").execute();
         connection.prepareStatement("DELETE FROM tracks").execute();
         connection.prepareStatement("DELETE FROM playlists").execute();
         connection.prepareStatement("DELETE FROM users").execute();
@@ -34,6 +36,7 @@ public class DatabaseSetup {
         connection.prepareStatement("""
             CREATE TABLE users (
                 id VARCHAR(255) PRIMARY KEY,
+                username VARCHAR(255) NOT NULL,
                 first_name VARCHAR(255) NOT NULL,
                 last_name VARCHAR(255) NOT NULL
             )

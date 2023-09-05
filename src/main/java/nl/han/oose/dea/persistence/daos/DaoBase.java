@@ -192,7 +192,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     private T mapToEntity(ResultSet resultSet) {
         T entity = entityFactory().get();
 
-        tableConfig.getProperties().forEach((property) -> {
+        getColumns().forEach((property) -> {
             try {
                 Object value = resultSet.getObject(property.getName());
 

@@ -22,13 +22,17 @@ public class UserConfiguration implements ITableConfiguration<User> {
                 .setSetter((user, id) -> user.setId((String) id))
                 .setGetter(User::getId)
         );
+        properties.add(new Property<User>("username")
+                .setSetter((user, username) -> user.setUsername((String) username))
+                .setGetter(User::getUsername)
+        );
         properties.add(new Property<User>("first_name")
                 .setSetter((user, firstName) -> user.setFirstName((String) firstName))
                 .setGetter(User::getFirstName)
         );
         properties.add(new Property<User>("last_name")
-                .setSetter((user, firstName) -> user.setFirstName((String) firstName))
-                .setGetter(User::getFirstName)
+                .setSetter((user, lastName) -> user.setLastName((String) lastName))
+                .setGetter(User::getLastName)
         );
         properties.add(new Property<User>("playlists")
                 .setSetter((user, playlists) -> user.setPlaylists((List<Playlist>) playlists))

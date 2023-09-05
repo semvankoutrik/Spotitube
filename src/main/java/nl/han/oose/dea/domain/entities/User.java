@@ -5,6 +5,7 @@ import nl.han.oose.dea.domain.shared.EntityBase;
 import java.util.List;
 
 public class User extends EntityBase {
+    private String username;
     private String firstName;
     private String lastName;
     private List<Playlist> playlists;
@@ -31,5 +32,13 @@ public class User extends EntityBase {
 
     public void setPlaylists(List<Playlist> playlists) {
         this.playlists = playlists;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
