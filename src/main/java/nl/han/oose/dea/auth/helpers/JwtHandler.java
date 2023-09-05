@@ -54,7 +54,7 @@ public class JwtHandler {
                     .getClaims()
                     .entrySet()
                     .stream()
-                    .map(s -> new Claim(s.getKey(), s.getValue())).toList();
+                    .map(s -> new Claim(s.getKey(), s.getValue().as(Object.class))).toList();
         } catch (JWTVerificationException e) {
             throw new InvalidTokenException();
         }
