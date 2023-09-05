@@ -8,6 +8,7 @@ import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.shared.Property;
+import nl.han.oose.dea.persistence.shared.Relation;
 import nl.han.oose.dea.persistence.utils.DatabaseConnection;
 import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.persistence.utils.PreparedStatementHelper;
@@ -25,21 +26,21 @@ import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setState
 @RequestScoped
 public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     private final ITableConfiguration<T> tableConfig;
-    private final String selectQuery;
     private final Connection connection;
     protected final Logger logger;
+
     protected abstract Supplier<T> entityFactory();
+
     private final List<String> includes = new ArrayList<>();
 
     public DaoBase(ITableConfiguration<T> tableConfig, Logger logger) {
         this.tableConfig = tableConfig;
         this.logger = logger;
         this.connection = DatabaseConnection.create();
-        this.selectQuery = "SELECT * FROM \"" + tableConfig.getName() + "\" ";
     }
 
     public void include(String relationName) {
-        if(tableConfig.getRelations().stream().noneMatch(r -> r.getName().equals(relationName))) {
+        if (tableConfig.getRelations().stream().noneMatch(r -> r.getName().equals(relationName))) {
             logger.log(Level.SEVERE, "Tried to include unknown relation: " + relationName);
         }
 
@@ -48,14 +49,28 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
     public List<T> get() throws DatabaseException {
         try {
+            StringBuilder query = new StringBuilder("SELECT *");
+
+            if (!includes.isEmpty()) {
+                for (String relation : includes) {
+                    Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relation);
+
+                    if (relationProperty.isEmpty()) throw new NullPointerException();
+
+//                    relationProperty.get()
+                }
+            }
+
+            query.append(" FROM \"" + tableConfig.getName() + "\" ");
+
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement(selectQuery);
+            PreparedStatement statement = connection.prepareStatement(query.toString());
 
             ResultSet resultSet = statement.executeQuery();
 
             List<T> entities = new ArrayList<>();
 
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 entities.add(mapToEntity(resultSet));
             }
 
@@ -72,7 +87,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     public List<T> get(Filter filter) throws DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement(selectQuery + filter.toQuery());
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM \"" + tableConfig.getName() + "\" " + filter.toQuery());
 
             filter.setStatementParameters(statement, 1);
 
@@ -80,7 +95,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             List<T> entities = new ArrayList<>();
 
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 entities.add(mapToEntity(resultSet));
             }
 

@@ -22,19 +22,17 @@ public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
                 .setSetter((playlist, name) -> playlist.setName((String) name))
                 .setGetter(Playlist::getName)
         );
-        properties.add(new Property<Playlist>("owner_id")
+        properties.add(Relation.hasOne("owner_id", TableNames.USERS, "id", new UserConfiguration(), Playlist.class)
                 .setSetter((playlist, id) -> {
                     User user = new User();
                     user.setId((String) id);
                     playlist.setOwner(user);
                 })
-                .setGetter((playlist) -> playlist.getOwner().getId())
-                .setRelation(Relation.hasOne(TableNames.USERS, "id"))
+                .setGetter(p -> p.getOwner().getId())
         );
-        properties.add(new Property<Playlist>("tracks")
+        relations.add(Relation.hasManyThrough("tracks", TableNames.PLAYLIST_TRACKS, "playlist_id", "track_id", TableNames.TRACKS, "id", new TrackConfiguration(), Playlist.class)
                 .setSetter((playlist, tracks) -> playlist.setTracks((List<Track>) tracks))
                 .setGetter(Playlist::getTracks)
-                .setRelation(Relation.hasManyThrough(TableNames.PLAYLIST_TRACKS, "playlist_id", "track_id", TableNames.TRACKS, "id"))
                 .setIgnoreIfNull(true)
         );
     }
