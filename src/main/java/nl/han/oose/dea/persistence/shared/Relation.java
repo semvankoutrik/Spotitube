@@ -31,4 +31,8 @@ public class Relation {
 
         return this;
     }
+
+    public RelationTypes getType() {
+        return type;
+    }
 }

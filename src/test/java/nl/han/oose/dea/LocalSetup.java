@@ -2,8 +2,10 @@ package nl.han.oose.dea;
 
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.User;
+import nl.han.oose.dea.persistence.daos.PlaylistDao;
 import nl.han.oose.dea.persistence.daos.UserDao;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
+import nl.han.oose.dea.utils.DataSuppliers;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -14,14 +16,22 @@ public class LocalSetup {
 
     public LocalSetup() {
         User user1 = new User();
+        user1.setId(DataSuppliers.UUIDString.get());
         user1.setFirstName("Sem");
         user1.setLastName("van Koutrik");
         users.add(user1);
 
         User user2 = new User();
+        user1.setId(DataSuppliers.UUIDString.get());
         user2.setFirstName("Sam");
         user2.setLastName("van Koetrik");
         users.add(user2);
+    }
+
+    @Test
+    public void seedAll() throws DatabaseException {
+        insertUsers();
+        insertPlaylists();
     }
 
     @Test
@@ -34,10 +44,15 @@ public class LocalSetup {
     }
 
     @Test
-    public void insertPlaylists() {
+    public void insertPlaylists() throws DatabaseException {
+        PlaylistDao playlistDao = new PlaylistDao();
+
         Playlist playlist = new Playlist();
 
+        playlist.setId(DataSuppliers.UUIDString.get());
         playlist.setName("Deja Vu");
         playlist.setOwner(users.get(0));
+
+        playlistDao.insert(playlist);
     }
 }

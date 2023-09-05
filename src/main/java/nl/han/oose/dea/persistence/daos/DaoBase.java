@@ -10,15 +10,18 @@ import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.utils.DatabaseConnection;
+import nl.han.oose.dea.persistence.utils.Filter;
+import nl.han.oose.dea.persistence.utils.PreparedStatementHelper;
 import nl.han.oose.dea.presentation.interfaces.daos.IBaseDao;
 
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setStatementParameter;
 
 @RequestScoped
 public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
@@ -38,10 +41,39 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         return tableConfig.getProperties().stream().filter(p -> p.getRelationType() == null || p.getRelationType() == RelationTypes.HAS_ONE).toList();
     }
 
+    public List<T> get(Filter filter) throws DatabaseException {
+        try {
+            // Create and execute statement.
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM \"" + tableConfig.getName() + "\" " + filter.toQuery());
+
+            filter.setStatementParameters(statement, 1);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            List<T> entities = new ArrayList<>();
+
+            while(resultSet.next()) {
+                entities.add(mapToEntity(resultSet));
+            }
+
+            statement.close();
+
+            return entities;
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
+
+            throw new DatabaseException();
+        } catch (DataTypeNotSupportedException e) {
+            logger.log(Level.SEVERE, "Given data-type not supported.", e);
+
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public T get(String id) throws NotFoundException, DatabaseException {
         try {
-            StringBuilder query = new StringBuilder("SELECT * FROM [" + tableConfig.getName() + "] WHERE [" + tableConfig.getName() + "].[id] = ?");
+            StringBuilder query = new StringBuilder("SELECT * FROM \"" + tableConfig.getName() + "\" WHERE \"" + tableConfig.getName() + "\".\"id\" = ?");
 
             // Create and execute statement.
             PreparedStatement statement = connection.prepareStatement(query.toString());
@@ -70,7 +102,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             List<Property<T>> columns = getColumns();
 
             // INSERT INTO ? (column1, column2, column3
-            StringBuilder queryBuilder = new StringBuilder("INSERT INTO " + tableConfig.getName() + " (");
+            StringBuilder queryBuilder = new StringBuilder("INSERT INTO \"" + tableConfig.getName() + "\" (");
             String columnNames = columns.stream().map(Property::getName).collect(Collectors.joining(", "));
             queryBuilder.append(columnNames);
 
@@ -88,7 +120,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             for (Property<T> property : getColumns()) {
                 Object value = property.getGetter().apply(entity);
 
-                if (property.getName().equals("id")) {
+                if (property.getName().equals("id") && value == null) {
                     value = UUID.randomUUID().toString();
                 }
 
@@ -133,13 +165,13 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
                 Object value = property.getGetter().apply(entity);
 
                 if (!property.getName().equals("id")) {
-                    setStatementParameter(statement, index, value);
+                    PreparedStatementHelper.setStatementParameter(statement, index, value);
                 }
 
                 index++;
             }
 
-            setStatementParameter(statement, index, entity.getId());
+            PreparedStatementHelper.setStatementParameter(statement, index, entity.getId());
 
             // Execute and close.
             statement.execute();
@@ -154,24 +186,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             logger.log(Level.SEVERE, "Data-type not supported: " + e.getDataType());
 
             throw new DatabaseException();
-        }
-    }
-
-    public void setStatementParameter(PreparedStatement statement, int index, Object value) throws SQLException, DataTypeNotSupportedException {
-        if (value == null) {
-            statement.setNull(index, Types.NULL);
-        } else if (value instanceof String) {
-            statement.setString(index, (String) value);
-        } else if (value instanceof Integer) {
-            statement.setInt(index, (Integer) value);
-        } else if (value instanceof Double) {
-            statement.setDouble(index, (Double) value);
-        } else if (value instanceof Date) {
-            statement.setDate(index, new java.sql.Date(((Date) value).getTime()));
-        } else if (value instanceof Boolean) {
-            statement.setBoolean(index, (Boolean) value);
-        } else {
-            throw new DataTypeNotSupportedException(value.getClass().getName());
         }
     }
 

@@ -6,6 +6,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
+import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.persistence.daos.PlaylistDao;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
@@ -16,9 +17,10 @@ import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 import java.util.logging.Logger;
 
 @Path("/playlists")
+@Authorize
 public class PlaylistsResource extends ResourceBase {
     private IPlaylistDao playlistDao;
-    private Logger logger = Logger.getLogger(PlaylistsResource.class.getName());
+    private final Logger logger = Logger.getLogger(PlaylistsResource.class.getName());
 
     @Inject
     public void setPlaylistDao(PlaylistDao playlistDao) {

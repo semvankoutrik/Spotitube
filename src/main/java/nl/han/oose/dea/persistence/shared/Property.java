@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 public class Property<TEntity> {
     private final String name;
-    private RelationTypes relationType;
     private BiConsumer<TEntity, Object> setter;
     private Function<TEntity, Object> getter;
     private Relation relation;
@@ -21,13 +20,8 @@ public class Property<TEntity> {
     }
 
     public RelationTypes getRelationType() {
-        return relationType;
-    }
-
-    public Property<TEntity> setRelationType(RelationTypes relationType) {
-        this.relationType = relationType;
-
-        return this;
+        if (relation == null) return null;
+        return relation.getType();
     }
 
     public BiConsumer<TEntity, Object> getSetter() {

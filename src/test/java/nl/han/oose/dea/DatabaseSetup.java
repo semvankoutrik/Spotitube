@@ -25,7 +25,7 @@ public class DatabaseSetup {
     @Test
     public void truncateTables() throws SQLException {
         connection.prepareStatement("DELETE FROM tracks").execute();
-        connection.prepareStatement("DELETE FROM playlist").execute();
+        connection.prepareStatement("DELETE FROM playlists").execute();
         connection.prepareStatement("DELETE FROM users").execute();
     }
 
@@ -64,7 +64,7 @@ public class DatabaseSetup {
             CREATE TABLE playlist_tracks (
                 playlist_id VARCHAR(255) NOT NULL,
                 track_id VARCHAR(255) NOT NULL,
-                CONSTRAINT fk_playlist FOREIGN KEY(track_id) REFERENCES playlist(id)
+                CONSTRAINT fk_playlist FOREIGN KEY(track_id) REFERENCES playlists(id),
                 CONSTRAINT fk_track FOREIGN KEY(playlist_id) REFERENCES tracks(id)
             )
         """).execute();
