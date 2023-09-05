@@ -4,7 +4,6 @@ import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.RequestScoped;
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
-import nl.han.oose.dea.persistence.constants.RelationTypes;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
@@ -28,8 +27,8 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     private final ITableConfiguration<T> tableConfig;
     private final Connection connection;
     protected final Logger logger;
-
     protected abstract Supplier<T> entityFactory();
+    private List<String> includes = new ArrayList<>();
 
     public DaoBase(ITableConfiguration<T> tableConfig, Logger logger) {
         this.tableConfig = tableConfig;
@@ -37,8 +36,10 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         this.connection = DatabaseConnection.create();
     }
 
-    private List<Property<T>> getColumns() {
-        return tableConfig.getProperties().stream().filter(p -> p.getRelationType() == null || p.getRelationType() == RelationTypes.HAS_ONE).toList();
+    public void include(String relationName) {
+        tableConfig.getProperties();
+
+        includes.add(relationName);
     }
 
     public List<T> get() throws DatabaseException {
@@ -122,7 +123,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     @Override
     public T insert(T entity) throws DatabaseException {
         try {
-            List<Property<T>> columns = getColumns();
+            List<Property<T>> columns = tableConfig.getColumns();
 
             // INSERT INTO ? (column1, column2, column3
             StringBuilder queryBuilder = new StringBuilder("INSERT INTO \"" + tableConfig.getName() + "\" (");
@@ -140,7 +141,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             // Set columns
             int index = 1;
-            for (Property<T> property : getColumns()) {
+            for (Property<T> property : tableConfig.getColumns()) {
                 Object value = property.getGetter().apply(entity);
 
                 if (property.getName().equals("id") && value == null) {
@@ -171,7 +172,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     @Override
     public T update(T entity) throws DatabaseException {
         try {
-            List<Property<T>> columns = getColumns();
+            List<Property<T>> columns = tableConfig.getColumns();
 
             // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
             StringBuilder queryBuilder = new StringBuilder("UPDATE " + tableConfig.getName() + " SET ");
@@ -215,7 +216,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     private T mapToEntity(ResultSet resultSet) {
         T entity = entityFactory().get();
 
-        getColumns().forEach((property) -> {
+        tableConfig.getColumns().forEach((property) -> {
             try {
                 Object value = resultSet.getObject(property.getName());
 

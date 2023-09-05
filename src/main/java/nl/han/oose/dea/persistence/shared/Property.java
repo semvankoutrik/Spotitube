@@ -10,6 +10,7 @@ public class Property<TEntity> {
     private BiConsumer<TEntity, Object> setter;
     private Function<TEntity, Object> getter;
     private Relation relation;
+    private boolean ignoreIfNull = false;
 
     public Property(String name) {
         this.name = name;
@@ -50,6 +51,16 @@ public class Property<TEntity> {
 
     public Property<TEntity> setRelation(Relation relation) {
         this.relation = relation;
+
+        return this;
+    }
+
+    public boolean getIgnoreIfNull() {
+        return ignoreIfNull;
+    }
+
+    public Property<TEntity> setIgnoreIfNull(boolean ignoreIfNull) {
+        this.ignoreIfNull = ignoreIfNull;
 
         return this;
     }

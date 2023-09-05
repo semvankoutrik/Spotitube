@@ -9,14 +9,9 @@ import nl.han.oose.dea.persistence.shared.Relation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserConfiguration implements ITableConfiguration<User> {
-    private final String name;
-    private final List<Property<User>> properties;
-
+public class UserConfiguration extends TableConfigurationBase<User> {
     public UserConfiguration() {
-        this.name = TableNames.USERS;
-
-        List<Property<User>> properties = new ArrayList<>();
+        super(TableNames.USERS);
 
         properties.add(new Property<User>("id")
                 .setSetter((user, id) -> user.setId((String) id))
@@ -39,17 +34,5 @@ public class UserConfiguration implements ITableConfiguration<User> {
                 .setGetter(User::getPlaylists)
                 .setRelation(Relation.hasMany("playlists", "owner_id"))
         );
-
-        this.properties = properties;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public List<Property<User>> getProperties() {
-        return properties;
     }
 }

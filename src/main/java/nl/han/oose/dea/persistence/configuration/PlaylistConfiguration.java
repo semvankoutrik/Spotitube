@@ -1,6 +1,7 @@
 package nl.han.oose.dea.persistence.configuration;
 
 import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
@@ -9,14 +10,9 @@ import nl.han.oose.dea.persistence.shared.Relation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistConfiguration implements ITableConfiguration<Playlist> {
-    private final String name;
-    private final List<Property<Playlist>> properties;
-
+public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
     public PlaylistConfiguration() {
-        this.name = TableNames.PLAYLISTS;
-
-        List<Property<Playlist>> properties = new ArrayList<>();
+        super(TableNames.PLAYLISTS);
 
         properties.add(new Property<Playlist>("id")
                 .setSetter((playlist, id) -> playlist.setId((String) id))
@@ -35,17 +31,11 @@ public class PlaylistConfiguration implements ITableConfiguration<Playlist> {
                 .setGetter((playlist) -> playlist.getOwner().getId())
                 .setRelation(Relation.hasOne(TableNames.USERS, "id"))
         );
-
-        this.properties = properties;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public List<Property<Playlist>> getProperties() {
-        return properties;
+        properties.add(new Property<Playlist>("tracks")
+                .setSetter((playlist, tracks) -> playlist.setTracks((List<Track>) tracks))
+                .setGetter(Playlist::getTracks)
+                .setRelation(Relation.hasManyThrough(TableNames.PLAYLIST_TRACKS, "playlist_id", "track_id", TableNames.TRACKS, "id"))
+                .setIgnoreIfNull(true)
+        );
     }
 }

@@ -8,4 +8,6 @@ import java.util.List;
 public interface ITableConfiguration<T extends EntityBase> {
     String getName();
     List<Property<T>> getProperties();
+    List<Property<T>> getColumns();
+    List<Property<T>> getRelations();
 }
