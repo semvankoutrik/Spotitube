@@ -26,14 +26,6 @@ public class User extends EntityBase {
         this.lastName = lastName;
     }
 
-    public List<Playlist> getPlaylists() {
-        return playlists;
-    }
-
-    public void setPlaylists(List<Playlist> playlists) {
-        this.playlists = playlists;
-    }
-
     public String getUsername() {
         return username;
     }

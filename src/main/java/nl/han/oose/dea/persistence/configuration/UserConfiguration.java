@@ -29,10 +29,5 @@ public class UserConfiguration extends TableConfigurationBase<User> {
                 .setSetter((user, lastName) -> user.setLastName((String) lastName))
                 .setGetter(User::getLastName)
         );
-        properties.add(new Property<User>("playlists")
-                .setSetter((user, playlists) -> user.setPlaylists((List<Playlist>) playlists))
-                .setGetter(User::getPlaylists)
-                .setRelation(Relation.hasMany("playlists", "owner_id"))
-        );
     }
 }

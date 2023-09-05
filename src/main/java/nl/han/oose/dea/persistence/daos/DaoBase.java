@@ -25,19 +25,23 @@ import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setState
 @RequestScoped
 public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     private final ITableConfiguration<T> tableConfig;
+    private final String selectQuery;
     private final Connection connection;
     protected final Logger logger;
     protected abstract Supplier<T> entityFactory();
-    private List<String> includes = new ArrayList<>();
+    private final List<String> includes = new ArrayList<>();
 
     public DaoBase(ITableConfiguration<T> tableConfig, Logger logger) {
         this.tableConfig = tableConfig;
         this.logger = logger;
         this.connection = DatabaseConnection.create();
+        this.selectQuery = "SELECT * FROM \"" + tableConfig.getName() + "\" ";
     }
 
     public void include(String relationName) {
-        tableConfig.getProperties();
+        if(tableConfig.getRelations().stream().noneMatch(r -> r.getName().equals(relationName))) {
+            logger.log(Level.SEVERE, "Tried to include unknown relation: " + relationName);
+        }
 
         includes.add(relationName);
     }
@@ -45,7 +49,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     public List<T> get() throws DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM \"" + tableConfig.getName() + "\"");
+            PreparedStatement statement = connection.prepareStatement(selectQuery);
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -68,7 +72,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     public List<T> get(Filter filter) throws DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM \"" + tableConfig.getName() + "\" " + filter.toQuery());
+            PreparedStatement statement = connection.prepareStatement(selectQuery + filter.toQuery());
 
             filter.setStatementParameters(statement, 1);
 
