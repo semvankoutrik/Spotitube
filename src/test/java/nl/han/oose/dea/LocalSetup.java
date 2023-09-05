@@ -1,8 +1,10 @@
 package nl.han.oose.dea;
 
 import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.daos.PlaylistDao;
+import nl.han.oose.dea.persistence.daos.TrackDao;
 import nl.han.oose.dea.persistence.daos.UserDao;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.utils.DataSuppliers;
@@ -36,7 +38,7 @@ public class LocalSetup {
         new DatabaseSetup().truncateTables();
 
         insertUsers();
-        insertPlaylists();
+        insertPlaylistsAndTracks();
     }
 
     @Test
@@ -49,15 +51,54 @@ public class LocalSetup {
     }
 
     @Test
-    public void insertPlaylists() throws DatabaseException {
+    public void insertPlaylistsAndTracks() throws DatabaseException {
+        TrackDao trackDao = new TrackDao();
+
+        Track ladyWriter = new Track();
+        ladyWriter.setId(DataSuppliers.UUIDString.get());
+        ladyWriter.setTitle("Lady Writer");
+        ladyWriter.setPerformer("Dire Straits");
+        ladyWriter.setDuration(224);
+        trackDao.insert(ladyWriter);
+
+        Track sultansOfSwing = new Track();
+        ladyWriter.setId(DataSuppliers.UUIDString.get());
+        ladyWriter.setTitle("Sultans Of Swing");
+        ladyWriter.setPerformer("Dire Straits");
+        ladyWriter.setDuration(348);
+        trackDao.insert(sultansOfSwing);
+
+        Track tunnelOfLove = new Track();
+        ladyWriter.setId(DataSuppliers.UUIDString.get());
+        ladyWriter.setTitle("Tunnel Of Love");
+        ladyWriter.setPerformer("Dire Straits");
+        ladyWriter.setDuration(489);
+        trackDao.insert(tunnelOfLove);
+
+        // Insert playlists
         PlaylistDao playlistDao = new PlaylistDao();
 
-        Playlist playlist = new Playlist();
+        // Deja Vu
+        Playlist dejaVu = new Playlist();
+        dejaVu.setId(DataSuppliers.UUIDString.get());
+        dejaVu.setName("Deja Vu");
+        dejaVu.setOwner(users.get(0));
 
-        playlist.setId(DataSuppliers.UUIDString.get());
-        playlist.setName("Deja Vu");
-        playlist.setOwner(users.get(0));
+        List<Track> dejaVuTracks = new ArrayList<>();
+        dejaVuTracks.add(ladyWriter);
+        dejaVuTracks.add(sultansOfSwing);
+        dejaVuTracks.add(tunnelOfLove);
+        dejaVu.setTracks(dejaVuTracks);
 
-        playlistDao.insert(playlist);
+        playlistDao.insert(dejaVu);
+
+        // Summer
+        Playlist summer = new Playlist();
+
+        summer.setId(DataSuppliers.UUIDString.get());
+        summer.setName("Summer");
+        summer.setOwner(users.get(1));
+
+        playlistDao.insert(summer);
     }
 }
