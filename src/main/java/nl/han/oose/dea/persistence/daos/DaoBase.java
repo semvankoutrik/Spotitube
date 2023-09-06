@@ -44,7 +44,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
     public List<T> get() throws DatabaseException {
         try {
-            // Create and execute statement.
             PreparedStatement statement = connection.prepareStatement(selectQuery() + orderById());
 
             ResultSet resultSet = statement.executeQuery();
@@ -85,7 +84,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
     public List<T> get(Filter filter) throws DatabaseException {
         try {
-            // Create and execute statement.
             PreparedStatement statement = connection.prepareStatement(selectQuery() + " " + filter.toQuery() + orderById());
 
             filter.setStatementParameters(statement, 1);
@@ -115,7 +113,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     @Override
     public T insert(T entity) throws DatabaseException {
         try {
-            // Start transaction.
             connection.setAutoCommit(false);
 
             List<Property<T>> columns = tableConfig.getColumns();
@@ -131,10 +128,9 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             insertEntityQuery.append(values);
             insertEntityQuery.append(")");
 
-            // Prepare statement
             PreparedStatement statement = connection.prepareStatement(insertEntityQuery.toString());
 
-            // Set columns
+            // Set ?-values
             int index = 1;
             for (Property<T> property : tableConfig.getColumns()) {
                 Object value = property.getGetter().apply(entity);
@@ -149,13 +145,11 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
                 index++;
             }
 
-            // Execute insert
             statement.execute();
             statement.close();
 
             updateRelations(entity);
 
-            // Commit transaction
             connection.commit();
 
             return entity;
@@ -173,21 +167,19 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     @Override
     public T update(T entity) throws DatabaseException {
         try {
-            // Start transaction.
             connection.setAutoCommit(false);
 
             List<Property<T>> columns = tableConfig.getColumns();
 
             // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
-            StringBuilder queryBuilder = new StringBuilder("UPDATE " + tableConfig.getName() + " SET ");
-            String placeholders = columns.stream().map(Property::getName).collect(Collectors.joining(" = ?, "));
+            StringBuilder queryBuilder = new StringBuilder("UPDATE \"" + tableConfig.getName() + "\" SET ");
+            String placeholders = columns.stream().map(c -> "\"" + c.getName() + "\" = ?, ").collect(Collectors.joining());
             queryBuilder.append(placeholders);
             queryBuilder.append(" WHERE id = ?");
 
-            // Prepare statement
             PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
 
-            // Set columns
+            // Set ?-values
             int index = 1;
             for (Property<T> property : columns) {
                 Object value = property.getGetter().apply(entity);
@@ -201,13 +193,11 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             PreparedStatementHelper.setStatementParameter(statement, index, entity.getId());
 
-            // Execute update
             statement.execute();
             statement.close();
 
             updateRelations(entity);
 
-            // Commit transaction
             connection.commit();
 
             return entity;
