@@ -40,34 +40,16 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             logger.log(Level.SEVERE, "Tried to include unknown relation: " + relationName);
         }
 
-        includes.add(relationName);
+        if (includes.stream().noneMatch(i -> i.equals(relationName))) {
+            includes.add(relationName);
+        }
     }
 
     public List<T> get() throws DatabaseException {
         try {
             PreparedStatement statement = connection.prepareStatement(selectQuery() + orderById());
 
-            ResultSet resultSet = statement.executeQuery();
-
-            List<T> entities = new ArrayList<>();
-
-            String currentId = "";
-            T currentEntity = null;
-
-            while (resultSet.next()) {
-                if (!currentId.equals(resultSet.getString(tableConfig.getName() + ".id"))) {
-                    currentId = resultSet.getString(tableConfig.getName() + ".id");
-                    currentEntity = tableConfig.mapResultSetToEntity(resultSet);
-                    tableConfig.mapRelations(currentEntity, resultSet);
-                    entities.add(currentEntity);
-                } else {
-                    tableConfig.mapRelations(currentEntity, resultSet);
-                }
-            }
-
-            statement.close();
-
-            return entities;
+            return executeSelectAndMap(statement);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
 
@@ -76,7 +58,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     }
 
     public T get(String id) throws NotFoundException, DatabaseException {
-        Optional<T> entity = get(Filters.equal("id", id)).stream().findFirst();
+        Optional<T> entity = get(Filters.equal("\"" + tableConfig.getName() + "\".\"id\"", id)).stream().findFirst();
 
         if (entity.isEmpty()) throw new NotFoundException();
 
@@ -89,17 +71,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             filter.setStatementParameters(statement, 1);
 
-            ResultSet resultSet = statement.executeQuery();
-
-            List<T> entities = new ArrayList<>();
-
-            while (resultSet.next()) {
-                entities.add(tableConfig.mapResultSetToEntity(resultSet));
-            }
-
-            statement.close();
-
-            return entities;
+            return executeSelectAndMap(statement);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
 
@@ -109,6 +81,32 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             throw new RuntimeException(e);
         }
+    }
+
+    private List<T> executeSelectAndMap(PreparedStatement statement) throws SQLException {
+        ResultSet resultSet = statement.executeQuery();
+
+        List<T> entities = new ArrayList<>();
+
+        String currentId = "";
+        T currentEntity = null;
+
+        while (resultSet.next()) {
+            if (!currentId.equals(resultSet.getString(tableConfig.getName() + ".id"))) {
+                currentId = resultSet.getString(tableConfig.getName() + ".id");
+                currentEntity = tableConfig.mapResultSetToEntity(resultSet);
+                if (!includes.isEmpty()) tableConfig.mapRelations(currentEntity, resultSet);
+                entities.add(currentEntity);
+            } else {
+                if (!includes.isEmpty()) {
+                    tableConfig.mapRelations(currentEntity, resultSet);
+                }
+            }
+        }
+
+        statement.close();
+
+        return entities;
     }
 
     @Override
@@ -176,7 +174,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             StringBuilder queryBuilder = new StringBuilder("UPDATE \"" + tableConfig.getName() + "\" SET ");
             String placeholders = columns.stream().map(c -> "\"" + c.getName() + "\" = ?, ").collect(Collectors.joining());
             queryBuilder.append(placeholders);
-            queryBuilder.append(" WHERE id = ?");
+            queryBuilder.append(" WHERE \"").append(tableConfig.getName()).append("\".\"id\" = ?");
 
             PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
 
@@ -296,6 +294,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     }
 
     private String orderById() {
-        return " ORDER BY \"" + tableConfig.getName() + "\".\"" + "id" +"\"";
+        return " ORDER BY \"" + tableConfig.getName() + "\".\"" + "id" + "\"";
     }
 }

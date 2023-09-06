@@ -3,6 +3,8 @@ package nl.han.oose.dea.persistence.daos;
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.persistence.configuration.PlaylistConfiguration;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
+import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
 
 import java.util.List;
@@ -18,5 +20,19 @@ public class PlaylistDao extends DaoBase<Playlist> implements IPlaylistDao {
         include("tracks");
 
         return super.get();
+    }
+
+    @Override
+    public Playlist get(String id) throws NotFoundException, DatabaseException {
+        include("tracks");
+
+        return super.get(id);
+    }
+
+    @Override
+    public List<Playlist> get(Filter filter) throws DatabaseException {
+        include("tracks");
+
+        return super.get(filter);
     }
 }
