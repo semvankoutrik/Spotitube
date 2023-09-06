@@ -117,20 +117,4 @@ public class Filter {
     public void setChildren(List<Filter> children) {
         this.children = children;
     }
-
-    public FilterTypes getType() {
-        return type;
-    }
-
-    public String getColumn() {
-        return column;
-    }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public List<Filter> getChildren() {
-        return children;
-    }
 }
