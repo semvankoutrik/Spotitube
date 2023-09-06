@@ -62,17 +62,17 @@ public class LocalSetup {
         trackDao.insert(ladyWriter);
 
         Track sultansOfSwing = new Track();
-        ladyWriter.setId(DataSuppliers.UUIDString.get());
-        ladyWriter.setTitle("Sultans Of Swing");
-        ladyWriter.setPerformer("Dire Straits");
-        ladyWriter.setDuration(348);
+        sultansOfSwing.setId(DataSuppliers.UUIDString.get());
+        sultansOfSwing.setTitle("Sultans Of Swing");
+        sultansOfSwing.setPerformer("Dire Straits");
+        sultansOfSwing.setDuration(348);
         trackDao.insert(sultansOfSwing);
 
         Track tunnelOfLove = new Track();
-        ladyWriter.setId(DataSuppliers.UUIDString.get());
-        ladyWriter.setTitle("Tunnel Of Love");
-        ladyWriter.setPerformer("Dire Straits");
-        ladyWriter.setDuration(489);
+        tunnelOfLove.setId(DataSuppliers.UUIDString.get());
+        tunnelOfLove.setTitle("Tunnel Of Love");
+        tunnelOfLove.setPerformer("Dire Straits");
+        tunnelOfLove.setDuration(489);
         trackDao.insert(tunnelOfLove);
 
         // Insert playlists

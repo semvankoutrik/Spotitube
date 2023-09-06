@@ -68,7 +68,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     public T get(String id) throws NotFoundException, DatabaseException {
         Optional<T> entity = get(Filters.equal("id", id)).stream().findFirst();
 
-        if(entity.isEmpty()) throw new NotFoundException();
+        if (entity.isEmpty()) throw new NotFoundException();
 
         return entity.get();
     }
@@ -105,21 +105,24 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     @Override
     public T insert(T entity) throws DatabaseException {
         try {
+            // Start transaction.
+            connection.setAutoCommit(false);
+
             List<Property<T>> columns = tableConfig.getColumns();
 
             // INSERT INTO ? (column1, column2, column3
-            StringBuilder queryBuilder = new StringBuilder("INSERT INTO \"" + tableConfig.getName() + "\" (");
+            StringBuilder insertEntityQuery = new StringBuilder("INSERT INTO \"" + tableConfig.getName() + "\" (");
             String columnNames = columns.stream().map(Property::getName).collect(Collectors.joining(", "));
-            queryBuilder.append(columnNames);
+            insertEntityQuery.append(columnNames);
 
             // INSERT INTO ? (column1, column2, column3) VALUES (?, ?, ?)
-            queryBuilder.append(") VALUES (");
+            insertEntityQuery.append(") VALUES (");
             String values = String.join(", ", Collections.nCopies(columns.size(), "?"));
-            queryBuilder.append(values);
-            queryBuilder.append(")");
+            insertEntityQuery.append(values);
+            insertEntityQuery.append(")");
 
             // Prepare statement
-            PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
+            PreparedStatement statement = connection.prepareStatement(insertEntityQuery.toString());
 
             // Set columns
             int index = 1;
@@ -128,6 +131,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
                 if (property.getName().equals("id") && value == null) {
                     value = UUID.randomUUID().toString();
+                    entity.setId((String) value);
                 }
 
                 setStatementParameter(statement, index, value);
@@ -137,6 +141,34 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             // Execute and close.
             statement.execute();
+
+            // Update HAS_MANY_THROUGH relation
+            for (Relation<T, ?> relation : tableConfig.getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
+                List<? extends EntityBase> objects = (List<? extends EntityBase>) relation.getGetter().apply(entity);
+
+                if (objects != null) {
+                    String linkTable = relation.getLinkTable();
+                    String linkColumn = relation.getLinkColumn();
+                    String foreignLinkColumn = relation.getForeignLinkColumn();
+
+                    String deleteLinksQuery = "DELETE FROM \"" + linkTable + "\" WHERE \"" + linkColumn + "\" = ?";
+                    PreparedStatement deleteStatement = connection.prepareStatement(deleteLinksQuery);
+                    deleteStatement.setString(1, entity.getId());
+
+                    String insertLinksQuery = "INSERT INTO \"" + linkTable + "\" (" + linkColumn + ", " + foreignLinkColumn + ") VALUES (?, ?)";
+
+                    for (EntityBase object : objects) {
+                        PreparedStatement insertLink = connection.prepareStatement(insertLinksQuery);
+                        insertLink.setString(1, entity.getId());
+                        insertLink.setString(2, object.getId());
+
+                        insertLink.execute();
+                    }
+                }
+            }
+
+            // Commit transaction
+            connection.commit();
             statement.close();
 
             return entity;
@@ -240,7 +272,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
                     query.append(" LEFT JOIN \"").append(relationProperty.get().getForeignTable()).append("\" ");
                     query.append(" ON \"").append(relationProperty.get().getLinkTable()).append("\".\"").append(relationProperty.get().getForeignLinkColumn()).append("\"");
-                    query.append(" = \"").append(relationProperty.get().getForeignTable()).append("\".\"").append(relationProperty.get().getForeignColumn()).append("\" ");
+                    query.append(" = \"").append(relationProperty.get().getForeignTable()).append("\".\"").append("id").append("\" ");
                 }
             }
         }

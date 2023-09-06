@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 
 public abstract class TableConfigurationBase<T extends EntityBase> implements ITableConfiguration<T> {
     protected final String name;
