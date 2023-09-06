@@ -26,6 +26,14 @@ public class UserConfiguration extends TableConfigurationBase<User> {
                 .setSetter((user, lastName) -> user.setLastName((String) lastName))
                 .setGetter(User::getLastName)
         );
+        properties.add(new Property<User>("password_hash")
+                .setSetter((user, passwordHash) -> user.setPasswordHash((String) passwordHash))
+                .setGetter(User::getPasswordHash)
+        );
+        properties.add(new Property<User>("password_salt")
+                .setSetter((user, passwordSalt) -> user.setPasswordSalt((String) passwordSalt))
+                .setGetter(User::getPasswordSalt)
+        );
     }
 
     @Override

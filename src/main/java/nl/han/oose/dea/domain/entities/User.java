@@ -8,6 +8,9 @@ public class User extends EntityBase {
     private String username;
     private String firstName;
     private String lastName;
+    private String passwordHash;
+    private String passwordSalt;
+
     private List<Playlist> playlists;
 
     public String getFirstName() {
@@ -32,5 +35,21 @@ public class User extends EntityBase {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getPasswordSalt() {
+        return passwordSalt;
+    }
+
+    public void setPasswordSalt(String passwordSalt) {
+        this.passwordSalt = passwordSalt;
     }
 }

@@ -1,9 +1,12 @@
 package nl.han.oose.dea.presentation.resources.auth;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.exceptions.InvalidPasswordException;
 import nl.han.oose.dea.auth.service.AuthService;
@@ -34,12 +37,13 @@ public class AuthResource extends ResourceBase {
 
     @POST
     @Path("/login")
-    @Produces("application/json")
-    public Response login(LoginRequest loginRequest) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(@Valid LoginRequest loginRequest) {
         try {
             Optional<User> user = userDao.get(Filters.equal("username", loginRequest.user())).stream().findFirst();
 
-            if (user.isEmpty()) return notFound();
+            if (user.isEmpty()) return badRequest("Username or password unknown.");
 
             String token = authService.signIn(user.get(), loginRequest.password());
 
@@ -47,7 +51,7 @@ public class AuthResource extends ResourceBase {
 
             return ok(response);
         } catch (InvalidPasswordException e) {
-            return notFound();
+            return badRequest("Username or password unknown.");
         } catch (DatabaseException e) {
             return internalServerError();
         }

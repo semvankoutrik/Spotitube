@@ -1,5 +1,6 @@
 package nl.han.oose.dea;
 
+import nl.han.oose.dea.auth.service.AuthService;
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
@@ -10,6 +11,7 @@ import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.utils.DataSuppliers;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ public class LocalSetup {
     }
 
     @Test
-    public void seedAll() throws DatabaseException, SQLException {
+    public void seedAll() throws DatabaseException, SQLException, IOException {
         new DatabaseSetup().truncateTables();
 
         insertUsers();
@@ -42,11 +44,14 @@ public class LocalSetup {
     }
 
     @Test
-    public void insertUsers() throws DatabaseException {
+    public void insertUsers() throws DatabaseException, IOException {
+        AuthService authService = new AuthService();
         UserDao userDao = new UserDao();
 
+        authService.setUserDao(userDao);
+
         for(User user : users) {
-            userDao.insert(user);
+            authService.registerUser(user, "Test1234!");
         }
     }
 

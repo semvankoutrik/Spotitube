@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.models.AuthContext;
 import nl.han.oose.dea.auth.models.AuthenticatedUser;
+import nl.han.oose.dea.persistence.models.BadRequest;
 
 public abstract class ResourceBase {
     private AuthContext authContext;
@@ -28,6 +29,9 @@ public abstract class ResourceBase {
     public Response notFound() {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
+    public Response badRequest() { return Response.status(Response.Status.BAD_REQUEST).build(); }
+    public Response badRequest(String message) { return Response.status(Response.Status.BAD_REQUEST).entity(BadRequest.fromMessage(message)).build(); }
+    public Response badRequest(BadRequest badRequest) { return Response.status(Response.Status.BAD_REQUEST).entity(badRequest).build(); }
 
     public Response internalServerError() {
         return Response.serverError().build();
