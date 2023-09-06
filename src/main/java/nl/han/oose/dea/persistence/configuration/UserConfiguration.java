@@ -33,7 +33,7 @@ public class UserConfiguration extends TableConfigurationBase<User> {
     }
 
     @Override
-    protected Supplier<User> entityFactory() {
+    public Supplier<User> entityFactory() {
         return User::new;
     }
 }

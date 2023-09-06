@@ -45,14 +45,26 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     public List<T> get() throws DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement(selectQuery());
+            PreparedStatement statement = connection.prepareStatement(selectQuery() + orderById());
 
             ResultSet resultSet = statement.executeQuery();
 
             List<T> entities = new ArrayList<>();
 
+            String currentId = "";
+            T currentEntity = null;
+
             while (resultSet.next()) {
-                entities.add(tableConfig.mapResultSetToEntity(resultSet));
+                if (!currentId.equals(resultSet.getString(tableConfig.getName() + ".id"))) {
+                    currentId = resultSet.getString(tableConfig.getName() + ".id");
+                    currentEntity = tableConfig.mapResultSetToEntity(resultSet);
+                    tableConfig.mapRelations(currentEntity, resultSet);
+                    entities.add(currentEntity);
+                } else {
+                    tableConfig.mapRelations(currentEntity, resultSet);
+                }
+
+//                entities.add(tableConfig.mapResultSetToEntity(resultSet, true));
             }
 
             statement.close();
@@ -76,7 +88,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     public List<T> get(Filter filter) throws DatabaseException {
         try {
             // Create and execute statement.
-            PreparedStatement statement = connection.prepareStatement(selectQuery() + " " + filter.toQuery());
+            PreparedStatement statement = connection.prepareStatement(selectQuery() + " " + filter.toQuery() + orderById());
 
             filter.setStatementParameters(statement, 1);
 
@@ -278,5 +290,9 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
         }
 
         return query.toString();
+    }
+
+    private String orderById() {
+        return " ORDER BY \"" + tableConfig.getName() + "\".\"" + "id" +"\"";
     }
 }

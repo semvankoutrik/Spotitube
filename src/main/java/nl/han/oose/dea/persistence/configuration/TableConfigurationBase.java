@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public abstract class TableConfigurationBase<T extends EntityBase> implements ITableConfiguration<T> {
     protected final String name;
     protected final List<Property<T>> properties = new ArrayList<>();
-    protected final List<Relation<T, ?>> relations = new ArrayList<>();
+    protected final List<Relation<T, ? extends EntityBase>> relations = new ArrayList<>();
 
     protected TableConfigurationBase(String name) {
         this.name = name;
@@ -39,32 +39,69 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
         return columns;
     }
 
-    public List<Relation<T, ?>> getRelations() {
+    public List<Relation<T, ? extends EntityBase>> getRelations() {
         return relations.stream().filter(p -> p.getType() == RelationTypes.HAS_MANY_THROUGH || p.getType() == RelationTypes.HAS_MANY).toList();
     }
 
-    public Optional<Relation<T, ?>> getRelation(String name) {
+    public Optional<Relation<T, ? extends EntityBase>> getRelation(String name) {
         return getRelations().stream().filter(r -> r.getName().equals(name)).findFirst();
     }
 
-    protected abstract Supplier<T> entityFactory();
+    public abstract Supplier<T> entityFactory();
 
     public T mapResultSetToEntity(ResultSet resultSet) {
         T entity = entityFactory().get();
 
-        getColumns().forEach((property) -> {
-            try {
+        try {
+            for (Property<T> property : getColumns()) {
                 Object value = resultSet.getObject(name + "." + property.getName());
 
+                if (value == null && !property.isNullable()) {
+                    return null;
+                }
+
                 property.getSetter().accept(entity, value);
-            } catch (SQLException e) {
-                // TODO: Fix logger
+            }
+
+//            if (includeRelations) {
+//                while (resultSet.next() && resultSet.getString(name + ".id").equals(id)) {
+//                    for (Relation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
+//                        var relationEntity = relation.getForeignTableConfiguration().mapResultSetToEntity(resultSet, false);
+//
+//                        var entityList = (List<EntityBase>) relation.getGetter().apply(entity);
+//
+//                        if (entityList == null) entityList = new ArrayList<>();
+//
+//                        entityList.add(relationEntity);
+//
+//                        relation.getSetter().accept(entity, entityList);
+//                    }
+//                }
+//
+//                resultSet.previous();
+//            }
+
+            return entity;
+
+        } catch (SQLException e) {
+            // TODO: Fix logger
 //                logger.log(Level.SEVERE, "Error mapping the result set to entity.", e);
 
-                throw new RuntimeException(e);
-            }
-        });
+            throw new RuntimeException(e);
+        }
+    }
 
-        return entity;
+    public void mapRelations(T entity, ResultSet resultSet) {
+        for (Relation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
+            var relationEntity = relation.getForeignTableConfiguration().mapResultSetToEntity(resultSet);
+
+            var entityList = (List<EntityBase>) relation.getGetter().apply(entity);
+
+            if (entityList == null) entityList = new ArrayList<>();
+
+            if (relationEntity != null) entityList.add(relationEntity);
+
+            relation.getSetter().accept(entity, entityList);
+        }
     }
 }

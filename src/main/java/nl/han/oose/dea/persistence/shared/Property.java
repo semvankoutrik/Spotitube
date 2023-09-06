@@ -10,6 +10,7 @@ public class Property<TEntity> {
     private BiConsumer<TEntity, Object> setter;
     private Function<TEntity, Object> getter;
     private boolean ignoreIfNull = false;
+    private boolean nullable = false;
 
     public Property(String name) {
         this.name = name;
@@ -47,5 +48,13 @@ public class Property<TEntity> {
         this.ignoreIfNull = ignoreIfNull;
 
         return this;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
     }
 }

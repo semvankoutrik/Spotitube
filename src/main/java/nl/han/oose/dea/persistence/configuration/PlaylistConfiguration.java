@@ -38,7 +38,7 @@ public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
     }
 
     @Override
-    protected Supplier<Playlist> entityFactory() {
+    public Supplier<Playlist> entityFactory() {
         return Playlist::new;
     }
 }

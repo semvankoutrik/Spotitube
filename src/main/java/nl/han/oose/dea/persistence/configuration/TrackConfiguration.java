@@ -29,7 +29,7 @@ public class TrackConfiguration extends TableConfigurationBase<Track> {
     }
 
     @Override
-    protected Supplier<Track> entityFactory() {
+    public Supplier<Track> entityFactory() {
         return Track::new;
     }
 }
