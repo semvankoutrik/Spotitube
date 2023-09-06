@@ -1,6 +1,7 @@
 package nl.han.oose.dea.presentation.resources.playlists.dtos;
 
 import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.Track;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,17 @@ public class GetPlaylistsResponse {
     public static GetPlaylistsResponse fromEntity(List<Playlist> playlists, String currentUserId) {
         GetPlaylistsResponse response = new GetPlaylistsResponse();
 
+        int length = 0;
+
         for (Playlist playlist : playlists) {
             response.addPlaylist(playlist, currentUserId);
+
+            for (Track t : playlist.getTracks()) {
+                length += t.getDuration();
+            }
         }
+
+        response.length = length;
 
         return response;
     }

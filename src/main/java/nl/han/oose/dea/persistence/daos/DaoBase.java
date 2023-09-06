@@ -63,8 +63,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
                 } else {
                     tableConfig.mapRelations(currentEntity, resultSet);
                 }
-
-//                entities.add(tableConfig.mapResultSetToEntity(resultSet, true));
             }
 
             statement.close();
@@ -151,37 +149,14 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
                 index++;
             }
 
-            // Execute and close.
+            // Execute insert
             statement.execute();
+            statement.close();
 
-            // Update HAS_MANY_THROUGH relation
-            for (Relation<T, ?> relation : tableConfig.getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
-                List<? extends EntityBase> objects = (List<? extends EntityBase>) relation.getGetter().apply(entity);
-
-                if (objects != null) {
-                    String linkTable = relation.getLinkTable();
-                    String linkColumn = relation.getLinkColumn();
-                    String foreignLinkColumn = relation.getForeignLinkColumn();
-
-                    String deleteLinksQuery = "DELETE FROM \"" + linkTable + "\" WHERE \"" + linkColumn + "\" = ?";
-                    PreparedStatement deleteStatement = connection.prepareStatement(deleteLinksQuery);
-                    deleteStatement.setString(1, entity.getId());
-
-                    String insertLinksQuery = "INSERT INTO \"" + linkTable + "\" (" + linkColumn + ", " + foreignLinkColumn + ") VALUES (?, ?)";
-
-                    for (EntityBase object : objects) {
-                        PreparedStatement insertLink = connection.prepareStatement(insertLinksQuery);
-                        insertLink.setString(1, entity.getId());
-                        insertLink.setString(2, object.getId());
-
-                        insertLink.execute();
-                    }
-                }
-            }
+            updateRelations(entity);
 
             // Commit transaction
             connection.commit();
-            statement.close();
 
             return entity;
         } catch (SQLException e) {
@@ -198,6 +173,9 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     @Override
     public T update(T entity) throws DatabaseException {
         try {
+            // Start transaction.
+            connection.setAutoCommit(false);
+
             List<Property<T>> columns = tableConfig.getColumns();
 
             // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
@@ -223,9 +201,14 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
 
             PreparedStatementHelper.setStatementParameter(statement, index, entity.getId());
 
-            // Execute and close.
+            // Execute update
             statement.execute();
             statement.close();
+
+            updateRelations(entity);
+
+            // Commit transaction
+            connection.commit();
 
             return entity;
         } catch (SQLException e) {
@@ -236,6 +219,35 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             logger.log(Level.SEVERE, "Data-type not supported: " + e.getDataType());
 
             throw new DatabaseException();
+        }
+    }
+
+    private void updateRelations(T entity) throws SQLException {
+        for (Relation<T, ?> relation : tableConfig.getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
+            List<? extends EntityBase> objects = (List<? extends EntityBase>) relation.getGetter().apply(entity);
+
+            if (objects != null) {
+                String linkTable = relation.getLinkTable();
+                String linkColumn = relation.getLinkColumn();
+                String foreignLinkColumn = relation.getForeignLinkColumn();
+
+                String deleteLinksQuery = "DELETE FROM \"" + linkTable + "\" WHERE \"" + linkColumn + "\" = ?";
+                PreparedStatement deleteStatement = connection.prepareStatement(deleteLinksQuery);
+                deleteStatement.setString(1, entity.getId());
+                deleteStatement.execute();
+                deleteStatement.close();
+
+                String insertLinksQuery = "INSERT INTO \"" + linkTable + "\" (" + linkColumn + ", " + foreignLinkColumn + ") VALUES (?, ?)";
+
+                for (EntityBase object : objects) {
+                    PreparedStatement insertLinksStatement = connection.prepareStatement(insertLinksQuery);
+                    insertLinksStatement.setString(1, entity.getId());
+                    insertLinksStatement.setString(2, object.getId());
+
+                    insertLinksStatement.execute();
+                    insertLinksStatement.close();
+                }
+            }
         }
     }
 

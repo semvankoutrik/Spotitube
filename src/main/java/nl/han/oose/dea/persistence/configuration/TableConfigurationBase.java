@@ -49,49 +49,24 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
 
     public abstract Supplier<T> entityFactory();
 
-    public T mapResultSetToEntity(ResultSet resultSet) {
+    public T mapResultSetToEntity(ResultSet resultSet) throws SQLException {
         T entity = entityFactory().get();
 
-        try {
-            for (Property<T> property : getColumns()) {
-                Object value = resultSet.getObject(name + "." + property.getName());
+        for (Property<T> property : getColumns()) {
+            Object value = resultSet.getObject(name + "." + property.getName());
 
-                if (value == null && !property.isNullable()) {
-                    return null;
-                }
-
-                property.getSetter().accept(entity, value);
+            if (value == null && !property.isNullable()) {
+                return null;
             }
 
-//            if (includeRelations) {
-//                while (resultSet.next() && resultSet.getString(name + ".id").equals(id)) {
-//                    for (Relation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
-//                        var relationEntity = relation.getForeignTableConfiguration().mapResultSetToEntity(resultSet, false);
-//
-//                        var entityList = (List<EntityBase>) relation.getGetter().apply(entity);
-//
-//                        if (entityList == null) entityList = new ArrayList<>();
-//
-//                        entityList.add(relationEntity);
-//
-//                        relation.getSetter().accept(entity, entityList);
-//                    }
-//                }
-//
-//                resultSet.previous();
-//            }
-
-            return entity;
-
-        } catch (SQLException e) {
-            // TODO: Fix logger
-//                logger.log(Level.SEVERE, "Error mapping the result set to entity.", e);
-
-            throw new RuntimeException(e);
+            property.getSetter().accept(entity, value);
         }
+
+        return entity;
+
     }
 
-    public void mapRelations(T entity, ResultSet resultSet) {
+    public void mapRelations(T entity, ResultSet resultSet) throws SQLException {
         for (Relation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
             var relationEntity = relation.getForeignTableConfiguration().mapResultSetToEntity(resultSet);
 
