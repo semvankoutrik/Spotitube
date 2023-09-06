@@ -14,7 +14,6 @@ import nl.han.oose.dea.auth.models.Claim;
 import nl.han.oose.dea.auth.service.AuthService;
 import nl.han.oose.dea.auth.shared.ClaimTypes;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;

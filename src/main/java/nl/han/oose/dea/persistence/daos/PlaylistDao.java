@@ -6,7 +6,6 @@ import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
 
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class PlaylistDao extends DaoBase<Playlist> implements IPlaylistDao {

@@ -1,6 +1,5 @@
 package nl.han.oose.dea.persistence.utils;
 
-import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.shared.Property;
 
 import java.util.List;

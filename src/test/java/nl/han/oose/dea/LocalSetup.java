@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LocalSetup {
-    private List<User> users = new ArrayList<>();
+    private final List<User> users = new ArrayList<>();
 
     public LocalSetup() {
         User user1 = new User();

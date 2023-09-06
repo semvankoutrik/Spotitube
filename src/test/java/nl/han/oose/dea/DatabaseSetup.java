@@ -7,7 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DatabaseSetup {
-    Connection connection = DatabaseConnection.create();
+    final Connection connection = DatabaseConnection.create();
 
     @Test
     public void resetDatabase() throws SQLException {

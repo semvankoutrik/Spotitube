@@ -1,16 +1,11 @@
 package nl.han.oose.dea.auth.service;
 
-import jakarta.inject.Inject;
 import nl.han.oose.dea.auth.exceptions.InvalidTokenException;
 import nl.han.oose.dea.auth.exceptions.InvalidPasswordException;
-import nl.han.oose.dea.auth.exceptions.UserNotFoundException;
 import nl.han.oose.dea.auth.helpers.JwtHandler;
 import nl.han.oose.dea.auth.models.Claim;
 import nl.han.oose.dea.auth.shared.ClaimTypes;
 import nl.han.oose.dea.domain.entities.User;
-import nl.han.oose.dea.persistence.daos.UserDao;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.utils.Filters;
 
 import java.io.IOException;
 import java.util.ArrayList;

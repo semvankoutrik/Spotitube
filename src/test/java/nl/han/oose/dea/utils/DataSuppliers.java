@@ -4,5 +4,5 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 public class DataSuppliers {
-    public static Supplier<String> UUIDString = () -> UUID.randomUUID().toString();
+    public static final Supplier<String> UUIDString = () -> UUID.randomUUID().toString();
 }

@@ -1,7 +1,5 @@
 package nl.han.oose.dea.persistence.shared;
 
-import nl.han.oose.dea.persistence.constants.RelationTypes;
-
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 

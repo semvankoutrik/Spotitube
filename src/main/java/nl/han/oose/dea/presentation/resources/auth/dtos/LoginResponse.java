@@ -1,8 +1,8 @@
 package nl.han.oose.dea.presentation.resources.auth.dtos;
 
 public class LoginResponse {
-    private String token;
-    private String name;
+    private final String token;
+    private final String name;
 
     public LoginResponse(String token, String name) {
         this.token = token;

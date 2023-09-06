@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetPlaylistsResponse {
-    private List<GetPlaylistResponse> playlists = new ArrayList<>();
+    private final List<GetPlaylistResponse> playlists = new ArrayList<>();
     private int length;
 
     public static GetPlaylistsResponse fromEntity(List<Playlist> playlists, String currentUserId) {

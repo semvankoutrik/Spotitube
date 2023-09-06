@@ -83,9 +83,7 @@ public class Filter {
                 query.append(column);
                 query.append(" != ? ");
             }
-            default -> {
-                throw new UnsupportedOperationException();
-            }
+            default -> throw new UnsupportedOperationException();
         }
 
         return query;

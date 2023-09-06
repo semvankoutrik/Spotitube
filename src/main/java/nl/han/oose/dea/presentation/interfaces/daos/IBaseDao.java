@@ -11,7 +11,7 @@ public interface IBaseDao<T extends EntityBase> {
     List<T> get() throws DatabaseException;
     T get(String id) throws NotFoundException, DatabaseException;
 
-    T insert(T entity) throws NotFoundException, DatabaseException;
+    T insert(T entity) throws DatabaseException;
 
     T update(T entity) throws DatabaseException;
 

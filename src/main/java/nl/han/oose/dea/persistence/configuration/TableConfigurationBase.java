@@ -1,6 +1,5 @@
 package nl.han.oose.dea.persistence.configuration;
 
-import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.constants.RelationTypes;
 import nl.han.oose.dea.persistence.shared.Property;

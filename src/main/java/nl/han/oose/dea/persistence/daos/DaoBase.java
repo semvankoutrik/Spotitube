@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setStatementParameter;
 
+@SuppressWarnings("unchecked")
 @RequestScoped
 public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     protected final Logger logger;

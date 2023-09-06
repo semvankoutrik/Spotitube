@@ -1,13 +1,9 @@
 package nl.han.oose.dea.persistence.configuration;
 
-import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
-import nl.han.oose.dea.persistence.shared.Relation;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class UserConfiguration extends TableConfigurationBase<User> {

@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AuthenticatedUser {
-    private String id;
-    private HashMap<String, Object> claims = new HashMap<>();
+    private final String id;
+    private final HashMap<String, Object> claims = new HashMap<>();
 
     public AuthenticatedUser(String id, List<Claim> claims) {
         this.id = id;
