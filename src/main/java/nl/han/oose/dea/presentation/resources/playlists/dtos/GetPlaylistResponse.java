@@ -2,6 +2,7 @@ package nl.han.oose.dea.presentation.resources.playlists.dtos;
 
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.Track;
+import nl.han.oose.dea.presentation.resources.tracks.dtos.GetTrackResponse;
 
 import java.util.ArrayList;
 import java.util.List;

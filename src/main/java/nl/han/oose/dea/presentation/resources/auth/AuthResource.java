@@ -14,6 +14,7 @@ import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.daos.UserDao;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.utils.Filters;
+import nl.han.oose.dea.presentation.interfaces.daos.IUserDao;
 import nl.han.oose.dea.presentation.resources.auth.dtos.LoginRequest;
 import nl.han.oose.dea.presentation.resources.auth.dtos.LoginResponse;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
@@ -22,11 +23,11 @@ import java.util.Optional;
 
 @Path("")
 public class AuthResource extends ResourceBase {
-    private UserDao userDao;
+    private IUserDao userDao;
     private AuthService authService;
 
     @Inject
-    public void setUserDao(UserDao userDao) {
+    public void setUserDao(IUserDao userDao) {
         this.userDao = userDao;
     }
 

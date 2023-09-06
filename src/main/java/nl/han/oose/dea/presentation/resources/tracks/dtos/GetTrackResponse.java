@@ -1,4 +1,4 @@
-package nl.han.oose.dea.presentation.resources.playlists.dtos;
+package nl.han.oose.dea.presentation.resources.tracks.dtos;
 
 import nl.han.oose.dea.domain.entities.Track;
 

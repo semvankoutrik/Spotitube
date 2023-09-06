@@ -1,30 +1,28 @@
-package nl.han.oose.dea.presentation.resources.playlists;
+package nl.han.oose.dea.presentation.resources.tracks;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.annotations.Authorize;
-import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
-import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
-import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistResponse;
-import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistsResponse;
+import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
+import nl.han.oose.dea.presentation.resources.tracks.dtos.GetTrackResponse;
 
 import java.util.List;
 import java.util.logging.Logger;
 
-@Path("/playlists")
-@Authorize
-public class PlaylistsResource extends ResourceBase {
-    private IPlaylistDao playlistDao;
-    private final Logger logger = Logger.getLogger(PlaylistsResource.class.getName());
+@Path("/tracks")
+public class TracksResource extends ResourceBase {
+    private ITrackDao tracksDao;
+    private final Logger logger = Logger.getLogger(TracksResource.class.getName());
 
     @Inject
-    public void setPlaylistDao(IPlaylistDao playlistDao) {
-        this.playlistDao = playlistDao;
+    public void setPlaylistDao(ITrackDao tracksDao) {
+        this.tracksDao = tracksDao;
     }
 
     @GET
@@ -34,9 +32,9 @@ public class PlaylistsResource extends ResourceBase {
     public Response get(@PathParam("id") String id) {
         try
         {
-            Playlist playlist = playlistDao.get(id);
+            Track track = tracksDao.get(id);
 
-            return ok(GetPlaylistResponse.fromEntity(playlist, getUser().getId()));
+            return ok(GetTrackResponse.fromEntity(track));
         }
         catch (DatabaseException e)
         {
@@ -55,9 +53,11 @@ public class PlaylistsResource extends ResourceBase {
     public Response getAll() {
         try
         {
-            List<Playlist> playlist = playlistDao.get();
+            List<Track> tracks = tracksDao.get();
 
-            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
+            List<GetTrackResponse> response = tracks.stream().map(GetTrackResponse::fromEntity).toList();
+
+            return ok(response);
         }
         catch (DatabaseException e)
         {

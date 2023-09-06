@@ -11,7 +11,7 @@ import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
 import nl.han.oose.dea.persistence.utils.*;
-import nl.han.oose.dea.presentation.interfaces.daos.IBaseDao;
+import nl.han.oose.dea.presentation.interfaces.daos.IDaoBase;
 
 import java.sql.*;
 import java.util.*;
@@ -23,7 +23,7 @@ import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setState
 
 @SuppressWarnings("unchecked")
 @RequestScoped
-public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
+public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     protected final Logger logger;
     private final ITableConfiguration<T> tableConfig;
     private final Connection connection;
@@ -110,7 +110,7 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
     }
 
     @Override
-    public T insert(T entity) throws DatabaseException {
+    public void insert(T entity) throws DatabaseException {
         try {
             connection.setAutoCommit(false);
 
@@ -150,8 +150,6 @@ public abstract class DaoBase<T extends EntityBase> implements IBaseDao<T> {
             updateRelations(entity);
 
             connection.commit();
-
-            return entity;
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Something went wrong saving the data.", e);
 
