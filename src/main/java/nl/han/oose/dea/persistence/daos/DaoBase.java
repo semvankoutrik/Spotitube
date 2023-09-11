@@ -171,8 +171,10 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
 
             // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
             StringBuilder queryBuilder = new StringBuilder("UPDATE \"" + tableConfig.getName() + "\" SET ");
-            String placeholders = columns.stream().map(c -> "\"" + c.getName() + "\" = ?, ").collect(Collectors.joining());
+            String placeholders = columns.stream().filter(c -> !c.getName().equals("id")).map(c -> "\"" + c.getName() + "\" = ?, ").collect(Collectors.joining());
             queryBuilder.append(placeholders);
+            // Remove trailing ", "
+            queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());
             queryBuilder.append(" WHERE \"").append(tableConfig.getName()).append("\".\"id\" = ?");
 
             PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
@@ -184,9 +186,9 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
 
                 if (!property.getName().equals("id")) {
                     PreparedStatementHelper.setStatementParameter(statement, index, value);
-                }
 
-                index++;
+                    index++;
+                }
             }
 
             PreparedStatementHelper.setStatementParameter(statement, index, entity.getId());

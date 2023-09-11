@@ -6,6 +6,7 @@ import nl.han.oose.dea.domain.entities.Track;
 import java.util.Date;
 
 public class GetPlaylistTrackResponse {
+    private String id;
     private String title;
     private String performer;
     private int duration;
@@ -14,15 +15,17 @@ public class GetPlaylistTrackResponse {
     private String description;
     private boolean offlineAvailable;
 
-    public GetPlaylistTrackResponse(String performer, String title, int duration, int playcount, boolean offlineAvailable) {
+    public GetPlaylistTrackResponse(String id, String performer, String title, int duration, int playcount, boolean offlineAvailable) {
+        this.id = id;
         this.performer = performer;
         this.title = title;
+        this.playcount = playcount;
         this.duration = duration;
         this.offlineAvailable = offlineAvailable;
     }
 
     public static GetPlaylistTrackResponse fromEntity(PlaylistTrack track) {
-        return new GetPlaylistTrackResponse(track.getPerformer(), track.getTitle(), track.getDuration(), track.getPlaycount(), track.isOfflineAvailable());
+        return new GetPlaylistTrackResponse(track.getId(), track.getPerformer(), track.getTitle(), track.getDuration(), track.getPlaycount(), track.isOfflineAvailable());
     }
 
     public String getPerformer() {
@@ -79,5 +82,13 @@ public class GetPlaylistTrackResponse {
 
     public void setPlaycount(int playcount) {
         this.playcount = playcount;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

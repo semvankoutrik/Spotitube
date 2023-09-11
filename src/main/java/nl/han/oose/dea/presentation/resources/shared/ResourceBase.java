@@ -36,4 +36,8 @@ public abstract class ResourceBase {
     public Response internalServerError() {
         return Response.serverError().build();
     }
+
+    public Response forbidden() {
+        return Response.status(Response.Status.FORBIDDEN).build();
+    }
 }
