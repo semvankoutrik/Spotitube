@@ -59,7 +59,7 @@ public class DatabaseSetup {
                 duration int NOT NULL,
                 album VARCHAR(255),
                 playcount int,
-                publicationDate DATE,
+                publication_date DATE,
                 description VARCHAR(255)
             )
         """).execute();

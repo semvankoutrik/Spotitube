@@ -44,7 +44,9 @@ public class Property<TEntity extends EntityBase> {
         return nullable;
     }
 
-    public void setNullable(boolean nullable) {
+    public Property<TEntity> setNullable(boolean nullable) {
         this.nullable = nullable;
+
+        return this;
     }
 }

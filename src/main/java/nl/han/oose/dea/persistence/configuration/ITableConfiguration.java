@@ -17,6 +17,7 @@ public interface ITableConfiguration<T extends EntityBase> {
     List<Relation<T, ? extends EntityBase>> getRelations();
     Optional<Relation<T, ? extends EntityBase>> getRelation(String name);
     T mapResultSetToEntity(ResultSet resultSet) throws SQLException;
+    T mapResultSetToEntity(ResultSet resultSet, boolean isRelation) throws SQLException;
     void mapRelations(T entity, ResultSet resultSet) throws SQLException;
 
     Supplier<T> entityFactory();

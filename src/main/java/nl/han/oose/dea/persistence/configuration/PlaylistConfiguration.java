@@ -12,10 +12,11 @@ import nl.han.oose.dea.persistence.shared.Relations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
     public PlaylistConfiguration() {
-        super(TableNames.PLAYLISTS);
+        super(TableNames.PLAYLISTS, Logger.getLogger(PlaylistConfiguration.class.getName()));
 
         properties.add(new Property<Playlist>("id")
                 .setSetter((playlist, id) -> playlist.setId((String) id))

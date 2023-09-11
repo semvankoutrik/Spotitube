@@ -5,10 +5,11 @@ import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
 
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class UserConfiguration extends TableConfigurationBase<User> {
     public UserConfiguration() {
-        super(TableNames.USERS);
+        super(TableNames.USERS, Logger.getLogger(UserConfiguration.class.getName()));
 
         properties.add(new Property<User>("id")
                 .setSetter((user, id) -> user.setId((String) id))
