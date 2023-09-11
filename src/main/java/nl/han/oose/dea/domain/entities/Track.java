@@ -8,6 +8,7 @@ public class Track extends EntityBase {
     private String title;
     private String performer;
     private int duration;
+    private int playcount;
     private Date publicationDate;
     private String description;
 
@@ -49,5 +50,13 @@ public class Track extends EntityBase {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public int getPlaycount() {
+        return playcount;
+    }
+
+    public void setPlaycount(int playcount) {
+        this.playcount = playcount;
     }
 }

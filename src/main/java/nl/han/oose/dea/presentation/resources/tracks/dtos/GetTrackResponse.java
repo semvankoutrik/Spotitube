@@ -2,19 +2,25 @@ package nl.han.oose.dea.presentation.resources.tracks.dtos;
 
 import nl.han.oose.dea.domain.entities.Track;
 
-public class GetTrackResponse {
-    private String performer;
-    private String title;
-    private int duration;
+import java.util.Date;
 
-    public GetTrackResponse(String performer, String title, int duration) {
+public class GetTrackResponse {
+    private String title;
+    private String performer;
+    private int duration;
+    private Date publicationDate;
+    private String description;
+    private int playcount;
+
+    public GetTrackResponse(String performer, String title, int duration, int playcount) {
         this.performer = performer;
         this.title = title;
         this.duration = duration;
+        this.playcount = playcount;
     }
 
     public static GetTrackResponse fromEntity(Track track) {
-        return new GetTrackResponse(track.getPerformer(), track.getTitle(), track.getDuration());
+        return new GetTrackResponse(track.getPerformer(), track.getTitle(), track.getDuration(), track.getPlaycount());
     }
 
     public String getPerformer() {
@@ -39,5 +45,29 @@ public class GetTrackResponse {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public Date getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(Date publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getPlaycount() {
+        return playcount;
+    }
+
+    public void setPlaycount(int playcount) {
+        this.playcount = playcount;
     }
 }
