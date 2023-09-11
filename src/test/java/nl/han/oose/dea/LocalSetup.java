@@ -66,6 +66,7 @@ public class LocalSetup {
         ladyWriter.setPerformer("Dire Straits");
         ladyWriter.setDuration(224);
         ladyWriter.setOfflineAvailable(false);
+        ladyWriter.setPlaycount(95304036);
         trackDao.insert(ladyWriter);
 
         PlaylistTrack sultansOfSwing = new PlaylistTrack();
@@ -74,6 +75,7 @@ public class LocalSetup {
         sultansOfSwing.setPerformer("Dire Straits");
         sultansOfSwing.setDuration(348);
         sultansOfSwing.setOfflineAvailable(true);
+        sultansOfSwing.setPlaycount(1026934930);
         trackDao.insert(sultansOfSwing);
 
         PlaylistTrack tunnelOfLove = new PlaylistTrack();
@@ -82,6 +84,7 @@ public class LocalSetup {
         tunnelOfLove.setPerformer("Dire Straits");
         tunnelOfLove.setDuration(489);
         tunnelOfLove.setOfflineAvailable(false);
+        tunnelOfLove.setPlaycount(74358678);
         trackDao.insert(tunnelOfLove);
 
         // Insert playlists
