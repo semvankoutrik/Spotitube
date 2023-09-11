@@ -8,6 +8,7 @@ import nl.han.oose.dea.persistence.constants.RelationTypes;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.persistence.shared.HasManyThroughRelation;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
 import nl.han.oose.dea.persistence.utils.*;
@@ -58,7 +59,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     }
 
     public T get(String id) throws NotFoundException, DatabaseException {
-        Optional<T> entity = get(Filters.equal("\"" + tableConfig.getName() + "\".\"id\"", id)).stream().findFirst();
+        Optional<T> entity = get(Filter.equal("\"" + tableConfig.getName() + "\".\"id\"", id)).stream().findFirst();
 
         if (entity.isEmpty()) throw new NotFoundException();
 
@@ -132,7 +133,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
             // Set ?-values
             int index = 1;
             for (Property<T> property : tableConfig.getColumns()) {
-                Object value = property.getGetter().apply(entity);
+                Object value = property.getValue(entity);
 
                 if (property.getName().equals("id") && value == null) {
                     value = UUID.randomUUID().toString();
@@ -179,7 +180,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
             // Set ?-values
             int index = 1;
             for (Property<T> property : columns) {
-                Object value = property.getGetter().apply(entity);
+                Object value = property.getValue(entity);
 
                 if (!property.getName().equals("id")) {
                     PreparedStatementHelper.setStatementParameter(statement, index, value);
@@ -209,27 +210,43 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         }
     }
 
-    private void updateRelations(T entity) throws SQLException {
-        for (Relation<T, ?> relation : tableConfig.getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
-            List<? extends EntityBase> objects = (List<? extends EntityBase>) relation.getGetter().apply(entity);
+    private void updateRelations(T entity) throws SQLException, DataTypeNotSupportedException {
+        for (HasManyThroughRelation<T, ? extends EntityBase> relation : tableConfig.getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).map(r -> ((HasManyThroughRelation<T, ?>) r)).toList()) {
+            List<? extends EntityBase> objects = (List<? extends EntityBase>) relation.getValue(entity);
 
             if (objects != null) {
                 String linkTable = relation.getLinkTable();
                 String linkColumn = relation.getLinkColumn();
                 String foreignLinkColumn = relation.getForeignLinkColumn();
 
+                // Delete
                 String deleteLinksQuery = "DELETE FROM \"" + linkTable + "\" WHERE \"" + linkColumn + "\" = ?";
                 PreparedStatement deleteStatement = connection.prepareStatement(deleteLinksQuery);
                 deleteStatement.setString(1, entity.getId());
                 deleteStatement.execute();
                 deleteStatement.close();
 
-                String insertLinksQuery = "INSERT INTO \"" + linkTable + "\" (" + linkColumn + ", " + foreignLinkColumn + ") VALUES (?, ?)";
+                // Create relation with properties
+                StringBuilder insertLinksQuery = new StringBuilder("INSERT INTO \"" + linkTable + "\" (" + linkColumn + ", " + foreignLinkColumn);
+                var properties = relation.getProperties();
+                properties.forEach(p -> insertLinksQuery.append(", ").append(p.getName()));
+                insertLinksQuery.append(") VALUES (?, ?");
+                properties.forEach(p -> insertLinksQuery.append(", ?"));
+                insertLinksQuery.append(")");
 
-                for (EntityBase object : objects) {
-                    PreparedStatement insertLinksStatement = connection.prepareStatement(insertLinksQuery);
+                for (var object : objects) {
+                    PreparedStatement insertLinksStatement = connection.prepareStatement(insertLinksQuery.toString());
                     insertLinksStatement.setString(1, entity.getId());
                     insertLinksStatement.setString(2, object.getId());
+
+                    // Set ?-values of relation properties
+                    int index = 3;
+                    for (Property<? extends EntityBase> property : relation.getProperties()) {
+                        Object value = property.getValue(object);
+
+                        PreparedStatementHelper.setStatementParameter(insertLinksStatement, index, value);
+                        index++;
+                    }
 
                     insertLinksStatement.execute();
                     insertLinksStatement.close();
@@ -255,8 +272,8 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         query.append(QueryHelper.propertiesToQuery(tableConfig.getName(), tableConfig.getProperties()));
 
         if (!includes.isEmpty()) {
-            for (String relation : includes) {
-                Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relation);
+            for (String relationTableName : includes) {
+                Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relationTableName);
 
                 if (relationProperty.isEmpty()) throw new NullPointerException();
 
@@ -265,6 +282,16 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
                 query.append(", ");
 
                 query.append(QueryHelper.propertiesToQuery(tableName, relationProperty.get().getForeignTableConfiguration().getProperties()));
+
+                // Include relation properties
+                if (relationProperty.get().getType() == RelationTypes.HAS_MANY_THROUGH) {
+                    HasManyThroughRelation<T, ?> hasManyThroughRelation = (HasManyThroughRelation<T, ?>) relationProperty.get();
+
+                    if (!hasManyThroughRelation.getProperties().isEmpty()) {
+                        query.append(", ");
+                        query.append(QueryHelper.propertiesToQuery(hasManyThroughRelation.getLinkTable(), hasManyThroughRelation.getProperties()));
+                    }
+                }
             }
         }
 
@@ -277,13 +304,15 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
                 if (relationProperty.isEmpty()) throw new NullPointerException();
 
                 if (relationProperty.get().getType() == RelationTypes.HAS_MANY_THROUGH) {
-                    query.append(" LEFT JOIN \"").append(relationProperty.get().getLinkTable()).append("\" ");
-                    query.append(" ON \"").append(relationProperty.get().getLinkTable()).append("\".\"").append(relationProperty.get().getLinkColumn()).append("\"");
+                    HasManyThroughRelation<T, ?> hasManyThroughRelation = (HasManyThroughRelation<T, ?>) relationProperty.get();
+
+                    query.append(" LEFT JOIN \"").append(hasManyThroughRelation.getLinkTable()).append("\" ");
+                    query.append(" ON \"").append(hasManyThroughRelation.getLinkTable()).append("\".\"").append(hasManyThroughRelation.getLinkColumn()).append("\"");
                     query.append(" = \"").append(tableConfig.getName()).append("\".\"").append("id\" ");
 
-                    query.append(" LEFT JOIN \"").append(relationProperty.get().getForeignTable()).append("\" ");
-                    query.append(" ON \"").append(relationProperty.get().getLinkTable()).append("\".\"").append(relationProperty.get().getForeignLinkColumn()).append("\"");
-                    query.append(" = \"").append(relationProperty.get().getForeignTable()).append("\".\"").append("id").append("\" ");
+                    query.append(" LEFT JOIN \"").append(hasManyThroughRelation.getForeignTable()).append("\" ");
+                    query.append(" ON \"").append(hasManyThroughRelation.getLinkTable()).append("\".\"").append(hasManyThroughRelation.getForeignLinkColumn()).append("\"");
+                    query.append(" = \"").append(hasManyThroughRelation.getForeignTable()).append("\".\"").append("id").append("\" ");
                 }
             }
         }

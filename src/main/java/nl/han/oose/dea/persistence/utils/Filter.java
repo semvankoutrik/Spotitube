@@ -5,6 +5,7 @@ import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 public class Filter {
@@ -13,23 +14,23 @@ public class Filter {
     private Object value;
     private List<Filter> children;
 
-    public static Filter andFilter(List<Filter> filters) {
+    public static Filter and(Filter... filters) {
         Filter filter = new Filter();
-        filter.setChildren(filters);
+        filter.setChildren(Arrays.stream(filters).toList());
         filter.setType(FilterTypes.AND);
 
         return filter;
     }
 
-    public static Filter orFilter(List<Filter> filters) {
+    public static Filter or(Filter... filters) {
         Filter filter = new Filter();
-        filter.setChildren(filters);
+        filter.setChildren(Arrays.stream(filters).toList());
         filter.setType(FilterTypes.OR);
 
         return filter;
     }
 
-    public static Filter equalFilter(String column, Object value) {
+    public static Filter equal(String column, Object value) {
         Filter filter = new Filter();
         filter.setColumn(column);
         filter.setValue(value);
@@ -38,7 +39,7 @@ public class Filter {
         return filter;
     }
 
-    public static Filter notEqualFilter(String column, Object value) {
+    public static Filter notEqual(String column, Object value) {
         Filter filter = new Filter();
         filter.setColumn(column);
         filter.setValue(value);

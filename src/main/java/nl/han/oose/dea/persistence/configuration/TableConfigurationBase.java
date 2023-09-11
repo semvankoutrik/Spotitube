@@ -2,6 +2,7 @@ package nl.han.oose.dea.persistence.configuration;
 
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.constants.RelationTypes;
+import nl.han.oose.dea.persistence.shared.HasManyThroughRelation;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
 
@@ -58,24 +59,31 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
                 return null;
             }
 
-            property.getSetter().accept(entity, value);
+            property.setValue(entity, value);
         }
 
         return entity;
-
     }
 
     public void mapRelations(T entity, ResultSet resultSet) throws SQLException {
-        for (Relation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).toList()) {
+        for (HasManyThroughRelation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).map(r -> (HasManyThroughRelation<T, ?>) r).toList()) {
             var relationEntity = relation.getForeignTableConfiguration().mapResultSetToEntity(resultSet);
 
-            var entityList = (List<EntityBase>) relation.getGetter().apply(entity);
+            var entityList = (List<EntityBase>) relation.getValue(entity);
 
             if (entityList == null) entityList = new ArrayList<>();
 
-            if (relationEntity != null) entityList.add(relationEntity);
+            if (relationEntity != null) {
+                entityList.add(relationEntity);
 
-            relation.getSetter().accept(entity, entityList);
+                for (Property<?> property : relation.getProperties()) {
+                    Object value = resultSet.getObject(relation.getLinkTable() + "." + property.getName());
+
+                    property.setValue(relationEntity, value);
+                }
+            }
+
+            relation.setValue(entity, entityList);
         }
     }
 }

@@ -2,6 +2,7 @@ package nl.han.oose.dea;
 
 import nl.han.oose.dea.auth.service.AuthService;
 import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.PlaylistTrack;
 import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.daos.PlaylistDao;
@@ -59,25 +60,28 @@ public class LocalSetup {
     public void insertPlaylistsAndTracks() throws DatabaseException {
         TrackDao trackDao = new TrackDao();
 
-        Track ladyWriter = new Track();
+        PlaylistTrack ladyWriter = new PlaylistTrack();
         ladyWriter.setId(DataSuppliers.UUIDString.get());
         ladyWriter.setTitle("Lady Writer");
         ladyWriter.setPerformer("Dire Straits");
         ladyWriter.setDuration(224);
+        ladyWriter.setOfflineAvailable(false);
         trackDao.insert(ladyWriter);
 
-        Track sultansOfSwing = new Track();
+        PlaylistTrack sultansOfSwing = new PlaylistTrack();
         sultansOfSwing.setId(DataSuppliers.UUIDString.get());
         sultansOfSwing.setTitle("Sultans Of Swing");
         sultansOfSwing.setPerformer("Dire Straits");
         sultansOfSwing.setDuration(348);
+        sultansOfSwing.setOfflineAvailable(true);
         trackDao.insert(sultansOfSwing);
 
-        Track tunnelOfLove = new Track();
+        PlaylistTrack tunnelOfLove = new PlaylistTrack();
         tunnelOfLove.setId(DataSuppliers.UUIDString.get());
         tunnelOfLove.setTitle("Tunnel Of Love");
         tunnelOfLove.setPerformer("Dire Straits");
         tunnelOfLove.setDuration(489);
+        tunnelOfLove.setOfflineAvailable(false);
         trackDao.insert(tunnelOfLove);
 
         // Insert playlists
@@ -89,7 +93,7 @@ public class LocalSetup {
         dejaVu.setName("Deja Vu");
         dejaVu.setOwner(users.get(0));
 
-        List<Track> dejaVuTracks = new ArrayList<>();
+        List<PlaylistTrack> dejaVuTracks = new ArrayList<>();
         dejaVuTracks.add(ladyWriter);
         dejaVuTracks.add(sultansOfSwing);
         dejaVuTracks.add(tunnelOfLove);

@@ -56,13 +56,18 @@ public class DatabaseSetup {
                 id VARCHAR(255) PRIMARY KEY,
                 performer VARCHAR(255) NOT NULL,
                 title VARCHAR(255) NOT NULL,
-                duration int NOT NULL
+                duration int NOT NULL,
+                album VARCHAR(255),
+                playcount int,
+                publicationDate DATE,
+                description VARCHAR(255)
             )
         """).execute();
         connection.prepareStatement("""
             CREATE TABLE playlist_tracks (
                 playlist_id VARCHAR(255) NOT NULL,
                 track_id VARCHAR(255) NOT NULL,
+                offline_available BOOLEAN NOT NULL,
                 CONSTRAINT fk_playlist FOREIGN KEY(playlist_id) REFERENCES playlists(id),
                 CONSTRAINT fk_track FOREIGN KEY(track_id) REFERENCES tracks(id)
             )

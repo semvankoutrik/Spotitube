@@ -7,7 +7,7 @@ import java.util.List;
 public class Playlist extends EntityBase {
     private String name;
     private User owner;
-    private List<Track> tracks;
+    private List<PlaylistTrack> tracks;
 
     public String getName() {
         return name;
@@ -25,11 +25,11 @@ public class Playlist extends EntityBase {
         this.owner = owner;
     }
 
-    public List<Track> getTracks() {
+    public List<PlaylistTrack> getTracks() {
         return tracks;
     }
 
-    public void setTracks(List<Track> tracks) {
+    public void setTracks(List<PlaylistTrack> tracks) {
         this.tracks = tracks;
     }
 }
