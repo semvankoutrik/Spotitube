@@ -33,16 +33,13 @@ public class PlaylistConfiguration extends TableConfigurationBase<Playlist> {
                 })
                 .setGetter(p -> p.getOwner().getId())
         );
-        List<Property<PlaylistTrack>> playlistTrackProperties = new ArrayList<>();
-        playlistTrackProperties.add(
-                new Property<PlaylistTrack>("offline_available")
-                        .setGetter(PlaylistTrack::isOfflineAvailable)
-                        .setSetter((playlistTrack, offlineAvailable) -> playlistTrack.setOfflineAvailable((boolean) offlineAvailable))
-        );
         relations.add(Relations.hasManyThrough("tracks", TableNames.PLAYLIST_TRACKS, "playlist_id", "track_id", TableNames.TRACKS, "id", new PlaylistTrackConfiguration(), Playlist.class)
                 .setSetter((playlist, tracks) -> playlist.setTracks((List<PlaylistTrack>) tracks))
                 .setGetter(Playlist::getTracks)
-                .setProperties(playlistTrackProperties)
+                .addProperty(new Property<PlaylistTrack>("offline_available")
+                        .setGetter(PlaylistTrack::isOfflineAvailable)
+                        .setSetter((playlistTrack, offlineAvailable) -> playlistTrack.setOfflineAvailable((boolean) offlineAvailable))
+                )
         );
     }
 

@@ -55,9 +55,8 @@ public class HasManyThroughRelation<TProperty extends EntityBase, TRelation exte
     public List<Property<TRelation>> getProperties() {
         return properties;
     }
-
-    public HasManyThroughRelation<TProperty, TRelation> setProperties(List<Property<TRelation>> properties) {
-        this.properties = properties;
+    public HasManyThroughRelation<TProperty, TRelation> addProperty(Property<TRelation> property) {
+        this.properties.add(property);
 
         return this;
     }
