@@ -12,10 +12,10 @@ public interface IDaoBase<T extends EntityBase> {
     List<T> get() throws DatabaseException;
     T get(String id) throws NotFoundException, DatabaseException;
     List<T> get(Filter filter) throws DatabaseException;
-
     void insert(T entity) throws DatabaseException;
-
     T update(T entity) throws DatabaseException;
+    void delete(String id) throws DatabaseException;
+    void include(String relationName);
 
     @PreDestroy
     void cleanup();

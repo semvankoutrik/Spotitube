@@ -2,7 +2,7 @@ package nl.han.oose.dea.persistence.shared;
 
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
-import nl.han.oose.dea.persistence.constants.RelationTypes;
+import nl.han.oose.dea.persistence.enums.RelationTypes;
 
 public class Relations {
     public static <TProperty extends EntityBase, TRelation extends EntityBase> Relation<TProperty, TRelation> hasOne(

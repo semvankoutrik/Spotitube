@@ -1,7 +1,7 @@
 package nl.han.oose.dea.persistence.configuration;
 
 import nl.han.oose.dea.domain.shared.EntityBase;
-import nl.han.oose.dea.persistence.constants.RelationTypes;
+import nl.han.oose.dea.persistence.enums.RelationTypes;
 import nl.han.oose.dea.persistence.shared.HasManyThroughRelation;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
@@ -64,6 +64,8 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
         List<String> invalidColumns = new ArrayList<>();
 
         for (Property<T> property : getColumns()) {
+            if(property.getSetter() == null) continue;
+
             Object value = resultSet.getObject(name + "." + property.getName());
 
             if (!isRelation) {
@@ -97,6 +99,8 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
 
     public void mapRelations(T entity, ResultSet resultSet) throws SQLException {
         for (HasManyThroughRelation<T, ?> relation : getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).map(r -> (HasManyThroughRelation<T, ?>) r).toList()) {
+            if (relation.getGetter() == null) continue;
+
             var relationEntity = relation.getForeignTableConfiguration().mapResultSetToEntity(resultSet, true);
 
             var entityList = (List<EntityBase>) relation.getValue(entity);

@@ -1,10 +1,11 @@
 package nl.han.oose.dea.persistence.daos;
 
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.RequestScoped;
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
-import nl.han.oose.dea.persistence.constants.RelationTypes;
+import nl.han.oose.dea.persistence.enums.RelationTypes;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
@@ -59,12 +60,41 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     }
 
     public T get(String id) throws NotFoundException, DatabaseException {
-        Optional<T> entity = get(Filter.equal("\"" + tableConfig.getName() + "\".\"id\"", id)).stream().findFirst();
+        Optional<T> entity = get(Filter.equal(tableConfig.getName(), "id", id)).stream().findFirst();
 
         if (entity.isEmpty()) throw new NotFoundException();
 
         return entity.get();
     }
+
+    public List<T> get(Join... joins) throws DatabaseException {
+        return get(null, joins);
+    }
+
+    public List<T> get(@Nullable Filter filter, Join... joins) throws DatabaseException {
+        try {
+            StringBuilder query = new StringBuilder(selectQuery(false) + " ");
+
+
+            if (filter != null) query.append(filter.toQuery());
+
+            PreparedStatement statement = connection.prepareStatement(query.toString());
+
+            // Set join parameters
+            if (filter != null) filter.setStatementParameters(statement, 1);
+
+            return executeSelectAndMap(statement);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
+
+            throw new DatabaseException();
+        } catch (DataTypeNotSupportedException e) {
+            logger.log(Level.SEVERE, "Given data-type not supported.", e);
+
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public List<T> get(Filter filter) throws DatabaseException {
         try {
@@ -84,33 +114,6 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         }
     }
 
-    private List<T> executeSelectAndMap(PreparedStatement statement) throws SQLException {
-        ResultSet resultSet = statement.executeQuery();
-
-        List<T> entities = new ArrayList<>();
-
-        String currentId = "";
-        T currentEntity = null;
-
-        while (resultSet.next()) {
-            if (!currentId.equals(resultSet.getString(tableConfig.getName() + ".id"))) {
-                currentId = resultSet.getString(tableConfig.getName() + ".id");
-                currentEntity = tableConfig.mapResultSetToEntity(resultSet);
-                if (!includes.isEmpty()) tableConfig.mapRelations(currentEntity, resultSet);
-                entities.add(currentEntity);
-            } else {
-                if (!includes.isEmpty()) {
-                    tableConfig.mapRelations(currentEntity, resultSet);
-                }
-            }
-        }
-
-        statement.close();
-
-        return entities;
-    }
-
-    @Override
     public void insert(T entity) throws DatabaseException {
         try {
             connection.setAutoCommit(false);
@@ -162,7 +165,6 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         }
     }
 
-    @Override
     public T update(T entity) throws DatabaseException {
         try {
             connection.setAutoCommit(false);
@@ -212,8 +214,64 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         }
     }
 
+    public void delete(String id) throws DatabaseException {
+        try {
+            PreparedStatement statement = connection.prepareStatement("DELETE FROM " + tableConfig.getName() + " WHERE id = ?");
+            PreparedStatementHelper.setStatementParameter(statement, 1, id);
+
+            statement.execute();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Something went wrong communicating with the database", e);
+
+            throw new DatabaseException();
+        } catch (DataTypeNotSupportedException e) {
+            logger.log(Level.SEVERE, "Given data-type not supported.", e);
+
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    @PreDestroy
+    public void cleanup() {
+        try {
+            connection.close();
+            logger.log(Level.INFO, "Connection with database closed.");
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Could not close database-connection.", e);
+        }
+    }
+
+    private List<T> executeSelectAndMap(PreparedStatement statement) throws SQLException {
+        ResultSet resultSet = statement.executeQuery();
+
+        List<T> entities = new ArrayList<>();
+
+        String currentId = "";
+        T currentEntity = null;
+
+        while (resultSet.next()) {
+            if (!currentId.equals(resultSet.getString(tableConfig.getName() + ".id"))) {
+                currentId = resultSet.getString(tableConfig.getName() + ".id");
+                currentEntity = tableConfig.mapResultSetToEntity(resultSet);
+                if (!includes.isEmpty()) tableConfig.mapRelations(currentEntity, resultSet);
+                entities.add(currentEntity);
+            } else {
+                if (!includes.isEmpty()) {
+                    tableConfig.mapRelations(currentEntity, resultSet);
+                }
+            }
+        }
+
+        statement.close();
+
+        return entities;
+    }
+
     private void updateRelations(T entity) throws SQLException, DataTypeNotSupportedException {
         for (HasManyThroughRelation<T, ? extends EntityBase> relation : tableConfig.getRelations().stream().filter(r -> r.getType() == RelationTypes.HAS_MANY_THROUGH).map(r -> ((HasManyThroughRelation<T, ?>) r)).toList()) {
+            if (relation.getGetter() == null) continue;
+
             List<? extends EntityBase> objects = (List<? extends EntityBase>) relation.getValue(entity);
 
             if (objects != null) {
@@ -257,23 +315,16 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         }
     }
 
-    @Override
-    @PreDestroy
-    public void cleanup() {
-        try {
-            connection.close();
-            logger.log(Level.INFO, "Connection with database closed.");
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Could not close database-connection.", e);
-        }
+    private String selectQuery() {
+        return selectQuery(true);
     }
 
-    private String selectQuery() {
+    private String selectQuery(boolean useIncludes) {
         StringBuilder query = new StringBuilder("SELECT ");
 
         query.append(QueryHelper.propertiesToQuery(tableConfig.getName(), tableConfig.getProperties()));
 
-        if (!includes.isEmpty()) {
+        if (!includes.isEmpty() && useIncludes) {
             for (String relationTableName : includes) {
                 Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relationTableName);
 
@@ -299,7 +350,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
 
         query.append(" FROM \"").append(tableConfig.getName()).append("\" ");
 
-        if (!includes.isEmpty()) {
+        if (!includes.isEmpty() && useIncludes) {
             for (String relation : includes) {
                 Optional<Relation<T, ?>> relationProperty = tableConfig.getRelation(relation);
 

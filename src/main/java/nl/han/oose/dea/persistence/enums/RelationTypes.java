@@ -1,4 +1,4 @@
-package nl.han.oose.dea.persistence.constants;
+package nl.han.oose.dea.persistence.enums;
 
 public enum RelationTypes {
     HAS_ONE,

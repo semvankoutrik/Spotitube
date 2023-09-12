@@ -5,6 +5,7 @@ import nl.han.oose.dea.domain.entities.Track;
 import java.util.Date;
 
 public class GetTrackResponse {
+    private String id;
     private String title;
     private String performer;
     private int duration;
@@ -12,7 +13,8 @@ public class GetTrackResponse {
     private String description;
     private int playcount;
 
-    public GetTrackResponse(String performer, String title, int duration, int playcount) {
+    public GetTrackResponse(String id, String performer, String title, int duration, int playcount) {
+        this.id = id;
         this.performer = performer;
         this.title = title;
         this.duration = duration;
@@ -20,7 +22,7 @@ public class GetTrackResponse {
     }
 
     public static GetTrackResponse fromEntity(Track track) {
-        return new GetTrackResponse(track.getPerformer(), track.getTitle(), track.getDuration(), track.getPlaycount());
+        return new GetTrackResponse(track.getId(), track.getPerformer(), track.getTitle(), track.getDuration(), track.getPlaycount());
     }
 
     public String getPerformer() {
@@ -69,5 +71,13 @@ public class GetTrackResponse {
 
     public void setPlaycount(int playcount) {
         this.playcount = playcount;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

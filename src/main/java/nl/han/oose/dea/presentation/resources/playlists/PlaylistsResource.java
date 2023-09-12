@@ -1,6 +1,7 @@
 package nl.han.oose.dea.presentation.resources.playlists;
 
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -13,10 +14,7 @@ import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
 import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
-import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistResponse;
-import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistTracksResponse;
-import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistsResponse;
-import nl.han.oose.dea.presentation.resources.playlists.dtos.UpdatePlaylistRequest;
+import nl.han.oose.dea.presentation.resources.playlists.dtos.*;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 
 import java.util.List;
@@ -40,9 +38,29 @@ public class PlaylistsResource extends ResourceBase {
     public Response getAll() {
         try
         {
-            List<Playlist> playlist = playlistDao.get();
+            List<Playlist> playlists = playlistDao.get();
 
-            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
+            return ok(GetPlaylistsResponse.fromEntity(playlists, getUser().getId()));
+        }
+        catch (DatabaseException e)
+        {
+            return internalServerError();
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response create(@Valid CreatePlaylistRequest request) {
+        try
+        {
+            Playlist playlist = request.mapToEntity(getUser().getId());
+
+            playlistDao.insert(playlist);
+
+            List<Playlist> playlists = playlistDao.get();
+
+            return ok(GetPlaylistsResponse.fromEntity(playlists, getUser().getId()));
         }
         catch (DatabaseException e)
         {
@@ -129,19 +147,30 @@ public class PlaylistsResource extends ResourceBase {
         }
     }
 
-//    @DELETE
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response delete() {
-//        try
-//        {
-//            List<Playlist> playlist = playlistDao.delete();
-//
-//            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
-//        }
-//        catch (DatabaseException e)
-//        {
-//            return internalServerError();
-//        }
-//    }
+    @DELETE
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(@PathParam("id") String id) {
+        try
+        {
+            Playlist playlist = playlistDao.get(id);
+
+            if(!Objects.equals(playlist.getOwner().getId(), getUser().getId())) {
+                return forbidden();
+            }
+
+            playlistDao.delete(id);
+
+            List<Playlist> playlists = playlistDao.get();
+
+            return ok(GetPlaylistsResponse.fromEntity(playlists, getUser().getId()));
+        }
+        catch (DatabaseException e)
+        {
+            return internalServerError();
+        } catch (NotFoundException e) {
+            return notFound();
+        }
+    }
 }

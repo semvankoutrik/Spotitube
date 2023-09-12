@@ -49,4 +49,12 @@ public class Property<TEntity extends EntityBase> {
 
         return this;
     }
+
+    public BiConsumer<TEntity, Object> getSetter() {
+        return setter;
+    }
+
+    public Function<TEntity, Object> getGetter() {
+        return getter;
+    }
 }

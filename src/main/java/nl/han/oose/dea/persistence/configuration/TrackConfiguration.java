@@ -1,9 +1,9 @@
 package nl.han.oose.dea.persistence.configuration;
 
-import nl.han.oose.dea.domain.entities.PlaylistTrack;
 import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
+import nl.han.oose.dea.persistence.shared.Relations;
 
 import java.util.Date;
 import java.util.function.Supplier;
@@ -42,6 +42,7 @@ public class TrackConfiguration extends TableConfigurationBase<Track> {
                 .setGetter(Track::getPublicationDate)
                 .setNullable(true)
         );
+        relations.add(Relations.hasManyThrough("playlists", TableNames.PLAYLIST_TRACKS, "track_id", "playlist_id", TableNames.PLAYLISTS, "id", new PlaylistConfiguration(), Track.class));
     }
 
     @Override

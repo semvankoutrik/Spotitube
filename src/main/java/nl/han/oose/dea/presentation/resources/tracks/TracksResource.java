@@ -8,6 +8,7 @@ import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 import nl.han.oose.dea.presentation.resources.tracks.dtos.GetTrackResponse;
@@ -26,42 +27,40 @@ public class TracksResource extends ResourceBase {
     }
 
     @GET
-    @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response get(@PathParam("id") String id) {
-        try
-        {
-            Track track = tracksDao.get(id);
+    public Response getAll(@QueryParam("forPlaylist") String id) {
+        try {
+            List<Track> tracks;
 
-            return ok(GetTrackResponse.fromEntity(track));
-        }
-        catch (DatabaseException e)
-        {
-            return internalServerError();
-        }
-        catch (NotFoundException e)
-        {
-            return notFound();
-        }
-    }
-
-    @GET
-    @Path("/")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAll() {
-        try
-        {
-            List<Track> tracks = tracksDao.get();
+            if (id == null) {
+                tracks = tracksDao.get();
+            } else {
+                tracksDao.include("playlists");
+                tracks = tracksDao.get(Filter.or(Filter.notEqual("playlist_tracks", "playlist_id", id), Filter.isNull("playlist_tracks", "playlist_id")));
+            }
 
             List<GetTrackResponse> response = tracks.stream().map(GetTrackResponse::fromEntity).toList();
 
             return ok(response);
-        }
-        catch (DatabaseException e)
-        {
+        } catch (DatabaseException e) {
             return internalServerError();
+        }
+    }
+
+    @GET
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response get(@PathParam("id") String id) {
+        try {
+            Track track = tracksDao.get(id);
+
+            return ok(GetTrackResponse.fromEntity(track));
+        } catch (DatabaseException e) {
+            return internalServerError();
+        } catch (NotFoundException e) {
+            return notFound();
         }
     }
 }

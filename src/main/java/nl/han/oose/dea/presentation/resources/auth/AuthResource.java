@@ -41,7 +41,7 @@ public class AuthResource extends ResourceBase {
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@Valid LoginRequest loginRequest) {
         try {
-            Optional<User> user = userDao.get(Filter.equal("username", loginRequest.user())).stream().findFirst();
+            Optional<User> user = userDao.get(Filter.equal("users", "username", loginRequest.user())).stream().findFirst();
 
             if (user.isEmpty()) return badRequest("Username or password unknown.");
 
