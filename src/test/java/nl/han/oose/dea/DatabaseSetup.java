@@ -68,8 +68,8 @@ public class DatabaseSetup {
                 playlist_id VARCHAR(255) NOT NULL,
                 track_id VARCHAR(255) NOT NULL,
                 offline_available BOOLEAN NOT NULL,
-                CONSTRAINT fk_playlist FOREIGN KEY(playlist_id) REFERENCES playlists(id),
-                CONSTRAINT fk_track FOREIGN KEY(track_id) REFERENCES tracks(id)
+                CONSTRAINT fk_playlist FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
+                CONSTRAINT fk_track FOREIGN KEY(track_id) REFERENCES tracks(id) ON DELETE CASCADE
             )
         """).execute();
     }

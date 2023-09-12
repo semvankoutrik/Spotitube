@@ -6,11 +6,15 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
+import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
 import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistResponse;
+import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistTracksResponse;
 import nl.han.oose.dea.presentation.resources.playlists.dtos.GetPlaylistsResponse;
 import nl.han.oose.dea.presentation.resources.playlists.dtos.UpdatePlaylistRequest;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
@@ -28,6 +32,22 @@ public class PlaylistsResource extends ResourceBase {
     @Inject
     public void setPlaylistDao(IPlaylistDao playlistDao) {
         this.playlistDao = playlistDao;
+    }
+
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAll() {
+        try
+        {
+            List<Playlist> playlist = playlistDao.get();
+
+            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
+        }
+        catch (DatabaseException e)
+        {
+            return internalServerError();
+        }
     }
 
     @GET
@@ -52,19 +72,23 @@ public class PlaylistsResource extends ResourceBase {
     }
 
     @GET
-    @Path("/")
+    @Path("{id}/tracks")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAll() {
+    public Response getTracks(@PathParam("id") String id) {
         try
         {
-            List<Playlist> playlist = playlistDao.get();
+            Playlist playlist = playlistDao.get(id);
 
-            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
+            return ok(GetPlaylistTracksResponse.fromEntity(playlist.getTracks()));
         }
         catch (DatabaseException e)
         {
             return internalServerError();
+        }
+        catch (NotFoundException e)
+        {
+            return notFound();
         }
     }
 
@@ -104,4 +128,20 @@ public class PlaylistsResource extends ResourceBase {
             return notFound();
         }
     }
+
+//    @DELETE
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response delete() {
+//        try
+//        {
+//            List<Playlist> playlist = playlistDao.delete();
+//
+//            return ok(GetPlaylistsResponse.fromEntity(playlist, getUser().getId()));
+//        }
+//        catch (DatabaseException e)
+//        {
+//            return internalServerError();
+//        }
+//    }
 }
