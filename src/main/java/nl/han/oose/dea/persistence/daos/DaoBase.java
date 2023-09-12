@@ -17,6 +17,7 @@ import nl.han.oose.dea.presentation.interfaces.daos.IDaoBase;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -75,13 +76,19 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         try {
             StringBuilder query = new StringBuilder(selectQuery(false) + " ");
 
+            Arrays.stream(joins).forEach(j -> query.append(j.toQuery()));
 
             if (filter != null) query.append(filter.toQuery());
 
             PreparedStatement statement = connection.prepareStatement(query.toString());
 
-            // Set join parameters
-            if (filter != null) filter.setStatementParameters(statement, 1);
+            AtomicInteger index = new AtomicInteger(1);
+
+            for (Join join : joins) {
+                join.setStatementParameters(statement, index);
+            }
+
+            if (filter != null) filter.setStatementParameters(statement, index);
 
             return executeSelectAndMap(statement);
         } catch (SQLException e) {

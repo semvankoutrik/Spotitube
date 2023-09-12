@@ -13,6 +13,8 @@ public class Filter {
     private FilterTypes type;
     private String table;
     private String column;
+    private String secondTable;
+    private String secondColumn;
     private Object value;
     private List<Filter> children;
 
@@ -28,6 +30,17 @@ public class Filter {
         Filter filter = new Filter();
         filter.setChildren(Arrays.stream(filters).toList());
         filter.setType(FilterTypes.OR);
+
+        return filter;
+    }
+
+    public static Filter equal(String table, String column, String secondTable, String secondColumn) {
+        Filter filter = new Filter();
+        filter.setTable(table);
+        filter.setColumn(column);
+        filter.setSecondTable(secondTable);
+        filter.setSecondColumn(secondColumn);
+        filter.setType(FilterTypes.EQUAL);
 
         return filter;
     }
@@ -100,11 +113,21 @@ public class Filter {
             }
             case EQUAL -> {
                 query.append("\"").append(table).append("\".\"").append(column).append("\"");
-                query.append(" = ? ");
+
+                if (value == null) {
+                    query.append("= \"").append(secondTable).append("\".\"").append(secondColumn).append("\"");
+                } else {
+                    query.append(" = ? ");
+                }
             }
             case NOT_EQUAL -> {
                 query.append("\"").append(table).append("\".\"").append(column).append("\"");
-                query.append(" != ? ");
+
+                if (value == null) {
+                    query.append("!= \"").append(secondTable).append("\".\"").append(secondColumn).append("\"");
+                } else {
+                    query.append(" != ? ");
+                }
             }
             case IS_NULL -> {
                 query.append("\"").append(table).append("\".\"").append(column).append("\"");
@@ -125,16 +148,19 @@ public class Filter {
     }
 
     /**
-     *
      * @param preparedStatement
-     * @param startingIndex Of type 'AtomicInteger' to ensure the starting index is incremented after each time the parameter is set.
+     * @param startingIndex     Of type 'AtomicInteger' to ensure the starting index is incremented after each time the parameter is set.
      * @throws DataTypeNotSupportedException
      * @throws SQLException
      */
     public void setStatementParameters(PreparedStatement preparedStatement, AtomicInteger startingIndex) throws DataTypeNotSupportedException, SQLException {
         if (type != FilterTypes.IS_NULL && type != FilterTypes.IS_NOT_NULL) {
             if (type == FilterTypes.EQUAL || type == FilterTypes.NOT_EQUAL) {
-                PreparedStatementHelper.setStatementParameter(preparedStatement, startingIndex.get(), value);
+                if (value != null) {
+                    PreparedStatementHelper.setStatementParameter(preparedStatement, startingIndex.get(), value);
+                } else {
+                    return;
+                }
             } else if (type == FilterTypes.OR || type == FilterTypes.AND) {
                 for (Filter filter : children) {
                     filter.setStatementParameters(preparedStatement, startingIndex);
@@ -164,5 +190,21 @@ public class Filter {
 
     public void setTable(String table) {
         this.table = table;
+    }
+
+    public String getSecondTable() {
+        return secondTable;
+    }
+
+    public void setSecondTable(String secondTable) {
+        this.secondTable = secondTable;
+    }
+
+    public String getSecondColumn() {
+        return secondColumn;
+    }
+
+    public void setSecondColumn(String secondColumn) {
+        this.secondColumn = secondColumn;
     }
 }

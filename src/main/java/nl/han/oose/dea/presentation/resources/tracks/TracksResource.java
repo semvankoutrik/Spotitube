@@ -9,6 +9,7 @@ import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.persistence.exceptions.DatabaseException;
 import nl.han.oose.dea.persistence.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.utils.Filter;
+import nl.han.oose.dea.persistence.utils.Join;
 import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 import nl.han.oose.dea.presentation.resources.tracks.dtos.GetTrackResponse;
@@ -37,7 +38,16 @@ public class TracksResource extends ResourceBase {
                 tracks = tracksDao.get();
             } else {
                 tracksDao.include("playlists");
-                tracks = tracksDao.get(Filter.or(Filter.notEqual("playlist_tracks", "playlist_id", id), Filter.isNull("playlist_tracks", "playlist_id")));
+                tracks = tracksDao.get(
+                        Filter.isNull("playlist_tracks", "playlist_id"),
+                        Join.leftJoin(
+                                "playlist_tracks",
+                                Filter.and(
+                                        Filter.equal("playlist_tracks", "track_id", "tracks", "id"),
+                                        Filter.equal("playlist_tracks", "playlist_id", id)
+                                )
+                        )
+                );
             }
 
             List<GetTrackResponse> response = tracks.stream().map(GetTrackResponse::fromEntity).toList();
