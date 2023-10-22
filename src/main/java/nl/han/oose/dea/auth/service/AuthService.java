@@ -8,8 +8,8 @@ import nl.han.oose.dea.auth.helpers.PasswordHelper;
 import nl.han.oose.dea.auth.models.Claim;
 import nl.han.oose.dea.auth.shared.ClaimTypes;
 import nl.han.oose.dea.domain.entities.User;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.presentation.interfaces.daos.IUserDao;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.persistence.interfaces.daos.IUserDao;
 
 import java.io.IOException;
 import java.util.ArrayList;

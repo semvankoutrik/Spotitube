@@ -1,4 +1,4 @@
-package nl.han.oose.dea.presentation.interfaces.daos;
+package nl.han.oose.dea.persistence.interfaces.daos;
 
 import nl.han.oose.dea.domain.entities.Playlist;
 

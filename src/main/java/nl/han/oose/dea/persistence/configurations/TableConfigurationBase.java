@@ -1,4 +1,4 @@
-package nl.han.oose.dea.persistence.configuration;
+package nl.han.oose.dea.persistence.configurations;
 
 import nl.han.oose.dea.domain.shared.EntityBase;
 import nl.han.oose.dea.persistence.enums.RelationTypes;

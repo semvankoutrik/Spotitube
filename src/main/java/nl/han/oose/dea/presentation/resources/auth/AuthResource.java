@@ -11,9 +11,10 @@ import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.exceptions.InvalidPasswordException;
 import nl.han.oose.dea.auth.service.AuthService;
 import nl.han.oose.dea.domain.entities.User;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.interfaces.IUserService;
 import nl.han.oose.dea.persistence.utils.Filter;
-import nl.han.oose.dea.presentation.interfaces.daos.IUserDao;
+import nl.han.oose.dea.persistence.interfaces.daos.IUserDao;
 import nl.han.oose.dea.presentation.resources.auth.dtos.LoginRequest;
 import nl.han.oose.dea.presentation.resources.auth.dtos.LoginResponse;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
@@ -22,12 +23,12 @@ import java.util.Optional;
 
 @Path("")
 public class AuthResource extends ResourceBase {
-    private IUserDao userDao;
+    private IUserService userService;
     private AuthService authService;
 
     @Inject
-    public void setUserDao(IUserDao userDao) {
-        this.userDao = userDao;
+    public void setUserService(IUserService userService) {
+        this.userService = userService;
     }
 
     @Inject
@@ -41,7 +42,7 @@ public class AuthResource extends ResourceBase {
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@Valid LoginRequest loginRequest) {
         try {
-            Optional<User> user = userDao.get(Filter.equal("users", "username", loginRequest.user())).stream().findFirst();
+            Optional<User> user = userService.getUserByUsername(loginRequest.user());
 
             if (user.isEmpty()) return badRequest("Username or password unknown.");
 

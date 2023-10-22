@@ -1,11 +1,11 @@
 package nl.han.oose.dea.persistence.daos;
 
 import nl.han.oose.dea.domain.entities.Playlist;
-import nl.han.oose.dea.persistence.configuration.PlaylistConfiguration;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.persistence.configurations.PlaylistConfiguration;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.utils.Filter;
-import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
+import nl.han.oose.dea.persistence.interfaces.daos.IPlaylistDao;
 
 import java.util.List;
 import java.util.logging.Logger;

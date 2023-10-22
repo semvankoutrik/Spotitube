@@ -7,13 +7,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.domain.entities.Playlist;
-import nl.han.oose.dea.domain.entities.Track;
-import nl.han.oose.dea.domain.entities.User;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.exceptions.NotFoundException;
-import nl.han.oose.dea.persistence.utils.Filter;
-import nl.han.oose.dea.presentation.interfaces.daos.IPlaylistDao;
-import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.NotFoundException;
+import nl.han.oose.dea.persistence.interfaces.daos.IPlaylistDao;
 import nl.han.oose.dea.presentation.resources.playlists.dtos.*;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 

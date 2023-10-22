@@ -1,15 +1,12 @@
-package nl.han.oose.dea.persistence.configuration;
+package nl.han.oose.dea.persistence.configurations;
 
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.PlaylistTrack;
-import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.constants.TableNames;
 import nl.han.oose.dea.persistence.shared.Property;
-import nl.han.oose.dea.persistence.shared.Relation;
 import nl.han.oose.dea.persistence.shared.Relations;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Logger;

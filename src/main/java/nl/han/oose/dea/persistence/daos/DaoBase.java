@@ -4,16 +4,16 @@ import jakarta.annotation.Nullable;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.RequestScoped;
 import nl.han.oose.dea.domain.shared.EntityBase;
-import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
+import nl.han.oose.dea.persistence.configurations.ITableConfiguration;
 import nl.han.oose.dea.persistence.enums.RelationTypes;
 import nl.han.oose.dea.persistence.exceptions.DataTypeNotSupportedException;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.shared.HasManyThroughRelation;
 import nl.han.oose.dea.persistence.shared.Property;
 import nl.han.oose.dea.persistence.shared.Relation;
 import nl.han.oose.dea.persistence.utils.*;
-import nl.han.oose.dea.presentation.interfaces.daos.IDaoBase;
+import nl.han.oose.dea.persistence.interfaces.daos.IDaoBase;
 
 import java.sql.*;
 import java.util.*;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import static nl.han.oose.dea.persistence.utils.PreparedStatementHelper.setStatementParameter;
 
-@SuppressWarnings("unchecked")
 @RequestScoped
 public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     protected final Logger logger;

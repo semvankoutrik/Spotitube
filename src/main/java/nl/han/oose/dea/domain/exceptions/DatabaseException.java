@@ -1,4 +1,4 @@
-package nl.han.oose.dea.persistence.exceptions;
+package nl.han.oose.dea.domain.exceptions;
 
 public class DatabaseException extends Throwable {
 }

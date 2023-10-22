@@ -1,4 +1,4 @@
-package nl.han.oose.dea.persistence.models;
+package nl.han.oose.dea.presentation.models;
 
 import java.util.Map;
 

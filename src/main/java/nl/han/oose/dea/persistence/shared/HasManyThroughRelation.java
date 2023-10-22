@@ -1,7 +1,7 @@
 package nl.han.oose.dea.persistence.shared;
 
 import nl.han.oose.dea.domain.shared.EntityBase;
-import nl.han.oose.dea.persistence.configuration.ITableConfiguration;
+import nl.han.oose.dea.persistence.configurations.ITableConfiguration;
 import nl.han.oose.dea.persistence.enums.RelationTypes;
 
 import java.util.ArrayList;

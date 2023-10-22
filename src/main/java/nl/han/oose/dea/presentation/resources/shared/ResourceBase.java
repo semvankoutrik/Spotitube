@@ -4,7 +4,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.models.AuthContext;
 import nl.han.oose.dea.auth.models.AuthenticatedUser;
-import nl.han.oose.dea.persistence.models.BadRequest;
+import nl.han.oose.dea.presentation.models.BadRequest;
 
 public abstract class ResourceBase {
     private AuthContext authContext;

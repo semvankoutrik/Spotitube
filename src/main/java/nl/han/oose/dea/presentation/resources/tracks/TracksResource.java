@@ -4,13 +4,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.domain.entities.Track;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.persistence.utils.Join;
-import nl.han.oose.dea.presentation.interfaces.daos.ITrackDao;
+import nl.han.oose.dea.persistence.interfaces.daos.ITrackDao;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 import nl.han.oose.dea.presentation.resources.tracks.dtos.GetTrackResponse;
 

@@ -3,12 +3,11 @@ package nl.han.oose.dea;
 import nl.han.oose.dea.auth.service.AuthService;
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.PlaylistTrack;
-import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.persistence.daos.PlaylistDao;
 import nl.han.oose.dea.persistence.daos.TrackDao;
 import nl.han.oose.dea.persistence.daos.UserDao;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
 import nl.han.oose.dea.utils.DataSuppliers;
 import org.junit.jupiter.api.Test;
 

@@ -1,10 +1,10 @@
-package nl.han.oose.dea.presentation.interfaces.daos;
+package nl.han.oose.dea.persistence.interfaces.daos;
 
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PreDestroy;
 import nl.han.oose.dea.domain.shared.EntityBase;
-import nl.han.oose.dea.persistence.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.exceptions.NotFoundException;
+import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.domain.exceptions.NotFoundException;
 import nl.han.oose.dea.persistence.utils.Filter;
 import nl.han.oose.dea.persistence.utils.Join;
 

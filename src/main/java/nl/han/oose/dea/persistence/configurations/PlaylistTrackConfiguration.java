@@ -1,4 +1,4 @@
-package nl.han.oose.dea.persistence.configuration;
+package nl.han.oose.dea.persistence.configurations;
 
 import nl.han.oose.dea.domain.entities.PlaylistTrack;
 import nl.han.oose.dea.domain.entities.Track;
