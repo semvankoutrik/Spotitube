@@ -7,23 +7,19 @@ import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.domain.entities.Track;
 import nl.han.oose.dea.domain.exceptions.DatabaseException;
 import nl.han.oose.dea.domain.exceptions.NotFoundException;
-import nl.han.oose.dea.persistence.utils.Filter;
-import nl.han.oose.dea.persistence.utils.Join;
-import nl.han.oose.dea.persistence.interfaces.daos.ITrackDao;
+import nl.han.oose.dea.domain.interfaces.ITrackRepository;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 import nl.han.oose.dea.presentation.resources.tracks.dtos.GetTrackResponse;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 @Path("/tracks")
 public class TracksResource extends ResourceBase {
-    private ITrackDao tracksDao;
-    private final Logger logger = Logger.getLogger(TracksResource.class.getName());
+    private ITrackRepository trackRepository;
 
     @Inject
-    public void setPlaylistDao(ITrackDao tracksDao) {
-        this.tracksDao = tracksDao;
+    public void setTrackRepository(ITrackRepository trackRepository) {
+        this.trackRepository = trackRepository;
     }
 
     @GET
@@ -34,19 +30,9 @@ public class TracksResource extends ResourceBase {
             List<Track> tracks;
 
             if (id == null) {
-                tracks = tracksDao.get();
+                tracks = trackRepository.getAll();
             } else {
-                tracksDao.include("playlists");
-                tracks = tracksDao.get(
-                        Filter.isNull("playlist_tracks", "playlist_id"),
-                        Join.leftJoin(
-                                "playlist_tracks",
-                                Filter.and(
-                                        Filter.equal("playlist_tracks", "track_id", "tracks", "id"),
-                                        Filter.equal("playlist_tracks", "playlist_id", id)
-                                )
-                        )
-                );
+                tracks = trackRepository.getNotInPlaylist(id);
             }
 
             List<GetTrackResponse> response = tracks.stream().map(GetTrackResponse::fromEntity).toList();
@@ -63,7 +49,7 @@ public class TracksResource extends ResourceBase {
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@PathParam("id") String id) {
         try {
-            Track track = tracksDao.get(id);
+            Track track = trackRepository.get(id);
 
             return ok(GetTrackResponse.fromEntity(track));
         } catch (DatabaseException e) {

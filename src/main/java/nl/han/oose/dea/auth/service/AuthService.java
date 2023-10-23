@@ -9,7 +9,7 @@ import nl.han.oose.dea.auth.models.Claim;
 import nl.han.oose.dea.auth.shared.ClaimTypes;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.domain.exceptions.DatabaseException;
-import nl.han.oose.dea.persistence.interfaces.daos.IUserDao;
+import nl.han.oose.dea.domain.interfaces.IUserRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,14 +18,13 @@ import java.util.List;
 import java.util.Properties;
 
 public class AuthService {
-    private IUserDao userDao;
+    private IUserRepository userRepository;
+    private final String signingKey;
 
     @Inject
-    public void setUserDao(IUserDao userDao) {
-        this.userDao = userDao;
+    public void setUserRepository(IUserRepository userRepository) {
+        this.userRepository = userRepository;
     }
-
-    private final String signingKey;
 
     public AuthService() throws IOException {
         Properties properties = new Properties();
@@ -70,7 +69,7 @@ public class AuthService {
         user.setPasswordSalt(Base64.getEncoder().encodeToString(salt));
         user.setPasswordHash(Base64.getEncoder().encodeToString(hashBytes));
 
-        userDao.insert(user);
+        userRepository.create(user);
 
         return user;
     }

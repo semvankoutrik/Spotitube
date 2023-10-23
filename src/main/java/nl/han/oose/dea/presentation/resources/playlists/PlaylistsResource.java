@@ -7,25 +7,24 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.domain.entities.Playlist;
+import nl.han.oose.dea.domain.entities.PlaylistTrack;
 import nl.han.oose.dea.domain.exceptions.DatabaseException;
 import nl.han.oose.dea.domain.exceptions.NotFoundException;
-import nl.han.oose.dea.persistence.interfaces.daos.IPlaylistDao;
+import nl.han.oose.dea.domain.interfaces.IPlaylistRepository;
 import nl.han.oose.dea.presentation.resources.playlists.dtos.*;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 @Path("/playlists")
 @Authorize
 public class PlaylistsResource extends ResourceBase {
-    private IPlaylistDao playlistDao;
-    private final Logger logger = Logger.getLogger(PlaylistsResource.class.getName());
+    private IPlaylistRepository playlistRepository;
 
     @Inject
-    public void setPlaylistDao(IPlaylistDao playlistDao) {
-        this.playlistDao = playlistDao;
+    public void setPlaylistRepository(IPlaylistRepository playlistRepository) {
+        this.playlistRepository = playlistRepository;
     }
 
     @GET
@@ -34,7 +33,7 @@ public class PlaylistsResource extends ResourceBase {
     public Response getAll() {
         try
         {
-            List<Playlist> playlists = playlistDao.get();
+            List<Playlist> playlists = playlistRepository.getAll();
 
             return ok(GetPlaylistsResponse.fromEntity(playlists, getUser().getId()));
         }
@@ -52,9 +51,9 @@ public class PlaylistsResource extends ResourceBase {
         {
             Playlist playlist = request.mapToEntity(getUser().getId());
 
-            playlistDao.insert(playlist);
+            playlistRepository.create(playlist);
 
-            List<Playlist> playlists = playlistDao.get();
+            List<Playlist> playlists = playlistRepository.getAll();
 
             return ok(GetPlaylistsResponse.fromEntity(playlists, getUser().getId()));
         }
@@ -71,7 +70,7 @@ public class PlaylistsResource extends ResourceBase {
     public Response get(@PathParam("id") String id) {
         try
         {
-            Playlist playlist = playlistDao.get(id);
+            Playlist playlist = playlistRepository.get(id);
 
             return ok(GetPlaylistResponse.fromEntity(playlist, getUser().getId()));
         }
@@ -92,9 +91,9 @@ public class PlaylistsResource extends ResourceBase {
     public Response getTracks(@PathParam("id") String id) {
         try
         {
-            Playlist playlist = playlistDao.get(id);
+            List<PlaylistTrack> tracks = playlistRepository.getTracks(id);
 
-            return ok(GetPlaylistTracksResponse.fromEntity(playlist.getTracks()));
+            return ok(GetPlaylistTracksResponse.fromEntity(tracks));
         }
         catch (DatabaseException e)
         {
@@ -113,7 +112,7 @@ public class PlaylistsResource extends ResourceBase {
     public Response update(@PathParam("id") String id, UpdatePlaylistRequest request) {
         try
         {
-            Playlist playlist = playlistDao.get(id);
+            Playlist playlist = playlistRepository.get(id);
 
             if (!Objects.equals(playlist.getOwner().getId(), getUser().getId())) {
                 return forbidden();
@@ -124,9 +123,9 @@ public class PlaylistsResource extends ResourceBase {
                 Playlist updatedPlaylist = request.mapToEntity();
                 updatedPlaylist.setOwner(playlist.getOwner());
 
-                playlistDao.update(updatedPlaylist);
+                playlistRepository.update(updatedPlaylist);
 
-                return ok(GetPlaylistResponse.fromEntity(playlistDao.get(id), getUser().getId()));
+                return ok(GetPlaylistsResponse.fromEntity(playlistRepository.getAll(), getUser().getId()));
             }
             catch (DatabaseException e)
             {
@@ -150,15 +149,15 @@ public class PlaylistsResource extends ResourceBase {
     public Response delete(@PathParam("id") String id) {
         try
         {
-            Playlist playlist = playlistDao.get(id);
+            Playlist playlist = playlistRepository.get(id);
 
             if(!Objects.equals(playlist.getOwner().getId(), getUser().getId())) {
                 return forbidden();
             }
 
-            playlistDao.delete(id);
+            playlistRepository.delete(id);
 
-            List<Playlist> playlists = playlistDao.get();
+            List<Playlist> playlists = playlistRepository.getAll();
 
             return ok(GetPlaylistsResponse.fromEntity(playlists, getUser().getId()));
         }

@@ -8,6 +8,7 @@ import nl.han.oose.dea.persistence.daos.PlaylistDao;
 import nl.han.oose.dea.persistence.daos.TrackDao;
 import nl.han.oose.dea.persistence.daos.UserDao;
 import nl.han.oose.dea.domain.exceptions.DatabaseException;
+import nl.han.oose.dea.persistence.repositories.UserRepository;
 import nl.han.oose.dea.utils.DataSuppliers;
 import org.junit.jupiter.api.Test;
 
@@ -46,9 +47,11 @@ public class LocalSetup {
     @Test
     public void insertUsers() throws DatabaseException, IOException {
         AuthService authService = new AuthService();
+        UserRepository userRepository = new UserRepository();
         UserDao userDao = new UserDao();
 
-        authService.setUserDao(userDao);
+        userRepository.setUserDao(userDao);
+        authService.setUserRepository(userRepository);
 
         for(User user : users) {
             authService.registerUser(user, "Test1234!");
