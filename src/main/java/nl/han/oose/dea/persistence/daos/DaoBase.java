@@ -31,10 +31,10 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     private final Connection connection;
     private final List<String> includes = new ArrayList<>();
 
-    public DaoBase(ITableConfiguration<T> tableConfig, Logger logger) {
+    public DaoBase(ITableConfiguration<T> tableConfig, Logger logger, Connection connection) {
         this.tableConfig = tableConfig;
         this.logger = logger;
-        this.connection = DatabaseConnection.create();
+        this.connection = connection;
     }
 
     public void include(String relationName) {
@@ -49,7 +49,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
 
     public List<T> get() throws DatabaseException {
         try {
-            PreparedStatement statement = connection.prepareStatement(selectQuery() + orderById());
+            PreparedStatement statement = connection.prepareStatement(selectQuery() + " " + orderById());
 
             return executeSelectAndMap(statement);
         } catch (SQLException e) {
@@ -365,13 +365,13 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
                 if (relationProperty.get().getType() == RelationTypes.HAS_MANY_THROUGH) {
                     HasManyThroughRelation<T, ?> hasManyThroughRelation = (HasManyThroughRelation<T, ?>) relationProperty.get();
 
-                    query.append(" LEFT JOIN ").append(hasManyThroughRelation.getLinkTable()).append(" ");
+                    query.append("LEFT JOIN ").append(hasManyThroughRelation.getLinkTable());
                     query.append(" ON ").append(hasManyThroughRelation.getLinkTable()).append(".").append(hasManyThroughRelation.getLinkColumn());
                     query.append(" = ").append(tableConfig.getName()).append(".").append("id ");
 
-                    query.append(" LEFT JOIN ").append(hasManyThroughRelation.getForeignTable()).append(" ");
+                    query.append("LEFT JOIN ").append(hasManyThroughRelation.getForeignTable());
                     query.append(" ON ").append(hasManyThroughRelation.getLinkTable()).append(".").append(hasManyThroughRelation.getForeignLinkColumn());
-                    query.append(" = ").append(hasManyThroughRelation.getForeignTable()).append(".").append("id").append(" ");
+                    query.append(" = ").append(hasManyThroughRelation.getForeignTable()).append(".").append("id");
                 }
             }
         }
@@ -380,6 +380,6 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     }
 
     private String orderById() {
-        return " ORDER BY " + tableConfig.getName() + "." + "id";
+        return "ORDER BY " + tableConfig.getName() + "." + "id";
     }
 }

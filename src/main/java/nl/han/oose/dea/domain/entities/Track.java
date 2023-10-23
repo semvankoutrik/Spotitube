@@ -5,6 +5,19 @@ import nl.han.oose.dea.domain.shared.EntityBase;
 import java.util.Date;
 
 public class Track extends EntityBase {
+    public Track()
+    {
+    }
+
+    public Track(String id, String title, String performer, int duration, int playcount, Date publicationDate, String description) {
+        this.setId(id);
+        this.title = title;
+        this.performer = performer;
+        this.playcount = playcount;
+        this.publicationDate = publicationDate;
+        this.description = description;
+    }
+
     private String title;
     private String performer;
     private int duration;

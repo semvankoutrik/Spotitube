@@ -12,12 +12,10 @@ public class QueryHelper {
         for (int i = 0; i < properties.size(); i++) {
             Property<T> p = properties.get(i);
 
-            builder.append(" ").append(tableName).append(".").append(p.getName()).append(" ");
+            builder.append(tableName).append(".").append(p.getName()).append(" ");
             builder.append("AS ").append(tableName).append("_").append(p.getName());
 
-            if (i == properties.size() - 1) {
-                builder.append(" ");
-            } else {
+            if (i != properties.size() - 1) {
                 builder.append(", ");
             }
         }

@@ -1,4 +1,4 @@
-package nl.han.oose.dea;
+package nl.han.oose.dea.localSetup;
 
 import nl.han.oose.dea.auth.services.AuthService;
 import nl.han.oose.dea.domain.entities.Playlist;

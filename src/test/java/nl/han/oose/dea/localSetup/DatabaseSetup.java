@@ -1,4 +1,4 @@
-package nl.han.oose.dea;
+package nl.han.oose.dea.localSetup;
 
 import nl.han.oose.dea.persistence.utils.DatabaseConnection;
 import org.junit.jupiter.api.Test;

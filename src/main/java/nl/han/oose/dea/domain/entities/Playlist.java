@@ -5,6 +5,16 @@ import nl.han.oose.dea.domain.shared.EntityBase;
 import java.util.List;
 
 public class Playlist extends EntityBase {
+    public Playlist() {
+    }
+
+    public Playlist(String id, String name, User owner, List<PlaylistTrack> tracks) {
+        this.setId(id);
+        this.name = name;
+        this.owner = owner;
+        this.tracks = tracks;
+    }
+
     private String name;
     private User owner;
     private List<PlaylistTrack> tracks;
