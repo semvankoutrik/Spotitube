@@ -11,6 +11,25 @@ import java.util.logging.Logger;
 public class DatabaseConnection {
     private static final Logger logger = Logger.getLogger(DatabaseConnection.class.getName());
 
+    public static String getDatabaseServer() {
+        var properties = new Properties();
+
+        try {
+            properties.load(DatabaseConnection.class.getClassLoader().getResourceAsStream("database.properties"));
+
+            String connectionString = properties.getProperty("connectionString");
+
+            String[] connectionStringArray = connectionString.split(":");
+
+            return connectionStringArray[1];
+
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Can't access database.properties.", e);
+
+            throw new RuntimeException();
+        }
+    }
+
     public static Connection create() {
         var properties = new Properties();
 

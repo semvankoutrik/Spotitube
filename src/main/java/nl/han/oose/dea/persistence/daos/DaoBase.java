@@ -127,7 +127,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
             List<Property<T>> columns = tableConfig.getColumns();
 
             // INSERT INTO ? (column1, column2, column3
-            StringBuilder insertEntityQuery = new StringBuilder("INSERT INTO \"" + tableConfig.getName() + "\" (");
+            StringBuilder insertEntityQuery = new StringBuilder("INSERT INTO " + tableConfig.getName() + " (");
             String columnNames = columns.stream().map(Property::getName).collect(Collectors.joining(", "));
             insertEntityQuery.append(columnNames);
 
@@ -178,12 +178,12 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
             List<Property<T>> columns = tableConfig.getColumns();
 
             // UPDATE ? SET column1 = ?, column2 = ?, column3 = ?
-            StringBuilder queryBuilder = new StringBuilder("UPDATE \"" + tableConfig.getName() + "\" SET ");
-            String placeholders = columns.stream().filter(c -> !c.getName().equals("id")).map(c -> "\"" + c.getName() + "\" = ?, ").collect(Collectors.joining());
+            StringBuilder queryBuilder = new StringBuilder("UPDATE " + tableConfig.getName() + " SET ");
+            String placeholders = columns.stream().filter(c -> !c.getName().equals("id")).map(c -> c.getName() + " = ?, ").collect(Collectors.joining());
             queryBuilder.append(placeholders);
             // Remove trailing ", "
             queryBuilder.delete(queryBuilder.length() - 2, queryBuilder.length());
-            queryBuilder.append(" WHERE \"").append(tableConfig.getName()).append("\".\"id\" = ?");
+            queryBuilder.append(" WHERE ").append(tableConfig.getName()).append(".id = ?");
 
             PreparedStatement statement = connection.prepareStatement(queryBuilder.toString());
 
@@ -257,8 +257,8 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
         T currentEntity = null;
 
         while (resultSet.next()) {
-            if (!currentId.equals(resultSet.getString(tableConfig.getName() + ".id"))) {
-                currentId = resultSet.getString(tableConfig.getName() + ".id");
+            if (!currentId.equals(resultSet.getString(tableConfig.getName() + "_id"))) {
+                currentId = resultSet.getString(tableConfig.getName() + "_id");
                 currentEntity = tableConfig.mapResultSetToEntity(resultSet);
                 if (!includes.isEmpty()) tableConfig.mapRelations(currentEntity, resultSet);
                 entities.add(currentEntity);
@@ -286,14 +286,14 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
                 String foreignLinkColumn = relation.getForeignLinkColumn();
 
                 // Delete
-                String deleteLinksQuery = "DELETE FROM \"" + linkTable + "\" WHERE \"" + linkColumn + "\" = ?";
+                String deleteLinksQuery = "DELETE FROM " + linkTable + " WHERE " + linkColumn + " = ?";
                 PreparedStatement deleteStatement = connection.prepareStatement(deleteLinksQuery);
                 deleteStatement.setString(1, entity.getId());
                 deleteStatement.execute();
                 deleteStatement.close();
 
                 // Create relation with properties
-                StringBuilder insertLinksQuery = new StringBuilder("INSERT INTO \"" + linkTable + "\" (" + linkColumn + ", " + foreignLinkColumn);
+                StringBuilder insertLinksQuery = new StringBuilder("INSERT INTO " + linkTable + " (" + linkColumn + ", " + foreignLinkColumn);
                 var properties = relation.getProperties();
                 properties.forEach(p -> insertLinksQuery.append(", ").append(p.getName()));
                 insertLinksQuery.append(") VALUES (?, ?");
@@ -354,7 +354,7 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
             }
         }
 
-        query.append(" FROM \"").append(tableConfig.getName()).append("\" ");
+        query.append(" FROM ").append(tableConfig.getName()).append(" ");
 
         if (!includes.isEmpty() && useIncludes) {
             for (String relation : includes) {
@@ -365,13 +365,13 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
                 if (relationProperty.get().getType() == RelationTypes.HAS_MANY_THROUGH) {
                     HasManyThroughRelation<T, ?> hasManyThroughRelation = (HasManyThroughRelation<T, ?>) relationProperty.get();
 
-                    query.append(" LEFT JOIN \"").append(hasManyThroughRelation.getLinkTable()).append("\" ");
-                    query.append(" ON \"").append(hasManyThroughRelation.getLinkTable()).append("\".\"").append(hasManyThroughRelation.getLinkColumn()).append("\"");
-                    query.append(" = \"").append(tableConfig.getName()).append("\".\"").append("id\" ");
+                    query.append(" LEFT JOIN ").append(hasManyThroughRelation.getLinkTable()).append(" ");
+                    query.append(" ON ").append(hasManyThroughRelation.getLinkTable()).append(".").append(hasManyThroughRelation.getLinkColumn());
+                    query.append(" = ").append(tableConfig.getName()).append(".").append("id ");
 
-                    query.append(" LEFT JOIN \"").append(hasManyThroughRelation.getForeignTable()).append("\" ");
-                    query.append(" ON \"").append(hasManyThroughRelation.getLinkTable()).append("\".\"").append(hasManyThroughRelation.getForeignLinkColumn()).append("\"");
-                    query.append(" = \"").append(hasManyThroughRelation.getForeignTable()).append("\".\"").append("id").append("\" ");
+                    query.append(" LEFT JOIN ").append(hasManyThroughRelation.getForeignTable()).append(" ");
+                    query.append(" ON ").append(hasManyThroughRelation.getLinkTable()).append(".").append(hasManyThroughRelation.getForeignLinkColumn());
+                    query.append(" = ").append(hasManyThroughRelation.getForeignTable()).append(".").append("id").append(" ");
                 }
             }
         }
@@ -380,6 +380,6 @@ public abstract class DaoBase<T extends EntityBase> implements IDaoBase<T> {
     }
 
     private String orderById() {
-        return " ORDER BY \"" + tableConfig.getName() + "\".\"" + "id" + "\"";
+        return " ORDER BY " + tableConfig.getName() + "." + "id";
     }
 }

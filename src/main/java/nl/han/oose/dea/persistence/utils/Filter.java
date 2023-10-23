@@ -112,29 +112,29 @@ public class Filter {
                 query.append(") ");
             }
             case EQUAL -> {
-                query.append("\"").append(table).append("\".\"").append(column).append("\"");
+                query.append(table).append(".").append(column);
 
                 if (value == null) {
-                    query.append("= \"").append(secondTable).append("\".\"").append(secondColumn).append("\"");
+                    query.append( "= ").append(secondTable).append(".").append(secondColumn);
                 } else {
                     query.append(" = ? ");
                 }
             }
             case NOT_EQUAL -> {
-                query.append("\"").append(table).append("\".\"").append(column).append("\"");
+                query.append(table).append(".").append(column);
 
                 if (value == null) {
-                    query.append("!= \"").append(secondTable).append("\".\"").append(secondColumn).append("\"");
+                    query.append("!= ").append(secondTable).append(".").append(secondColumn);
                 } else {
                     query.append(" != ? ");
                 }
             }
             case IS_NULL -> {
-                query.append("\"").append(table).append("\".\"").append(column).append("\"");
+                query.append(table).append(".").append(column);
                 query.append(" IS NULL ");
             }
             case IS_NOT_NULL -> {
-                query.append("\"").append(table).append("\".\"").append(column).append("\"");
+                query.append(table).append(".").append(column);
                 query.append(" IS NOT NULL ");
             }
             default -> throw new UnsupportedOperationException();

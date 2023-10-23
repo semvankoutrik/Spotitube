@@ -66,7 +66,7 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
         for (Property<T> property : getColumns()) {
             if(property.getSetter() == null) continue;
 
-            Object value = resultSet.getObject(name + "." + property.getName());
+            Object value = resultSet.getObject(name + "_" + property.getName());
 
             if (!isRelation) {
                 if (value == null && !property.isNullable()) {
@@ -92,7 +92,7 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
             return null;
         }
 
-        invalidColumns.forEach(c -> logger.log(Level.WARNING, "The value of the column \"" + getName() + "\".\"" + c + "\" defined as non-nullable is null."));
+        invalidColumns.forEach(c -> logger.log(Level.WARNING, "The value of the column " + getName() + "_" + c + " defined as non-nullable is null."));
 
         return entity;
     }
@@ -111,7 +111,7 @@ public abstract class TableConfigurationBase<T extends EntityBase> implements IT
                 entityList.add(relationEntity);
 
                 for (Property<?> property : relation.getProperties()) {
-                    Object value = resultSet.getObject(relation.getLinkTable() + "." + property.getName());
+                    Object value = resultSet.getObject(relation.getLinkTable() + "_" + property.getName());
 
                     property.setValue(relationEntity, value);
                 }

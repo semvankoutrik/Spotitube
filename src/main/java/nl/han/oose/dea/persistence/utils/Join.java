@@ -27,7 +27,7 @@ public class Join {
 
         switch (type) {
             case LEFT_JOIN -> {
-                query.append(" LEFT JOIN \"").append(table).append("\" ON ");
+                query.append(" LEFT JOIN ").append(table).append(" ON ");
                 filter.toQuery(query);
             }
             default -> throw new UnsupportedOperationException();
