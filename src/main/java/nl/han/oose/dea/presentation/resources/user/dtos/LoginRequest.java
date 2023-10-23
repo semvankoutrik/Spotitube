@@ -1,4 +1,4 @@
-package nl.han.oose.dea.presentation.resources.auth.dtos;
+package nl.han.oose.dea.presentation.resources.user.dtos;
 
 import jakarta.validation.constraints.NotNull;
 

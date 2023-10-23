@@ -1,4 +1,4 @@
-package nl.han.oose.dea.presentation.resources.auth;
+package nl.han.oose.dea.presentation.resources.user;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -9,18 +9,18 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import nl.han.oose.dea.auth.exceptions.InvalidPasswordException;
-import nl.han.oose.dea.auth.service.AuthService;
+import nl.han.oose.dea.auth.services.AuthService;
 import nl.han.oose.dea.domain.entities.User;
 import nl.han.oose.dea.domain.exceptions.DatabaseException;
 import nl.han.oose.dea.domain.interfaces.IUserRepository;
-import nl.han.oose.dea.presentation.resources.auth.dtos.LoginRequest;
-import nl.han.oose.dea.presentation.resources.auth.dtos.LoginResponse;
+import nl.han.oose.dea.presentation.resources.user.dtos.LoginRequest;
+import nl.han.oose.dea.presentation.resources.user.dtos.LoginResponse;
 import nl.han.oose.dea.presentation.resources.shared.ResourceBase;
 
 import java.util.Optional;
 
 @Path("")
-public class AuthResource extends ResourceBase {
+public class UserResource extends ResourceBase {
     private IUserRepository userService;
     private AuthService authService;
 

@@ -2,7 +2,7 @@ package nl.han.oose.dea.presentation.resources.shared;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
-import nl.han.oose.dea.auth.models.AuthContext;
+import nl.han.oose.dea.auth.services.AuthContext;
 import nl.han.oose.dea.auth.models.AuthenticatedUser;
 import nl.han.oose.dea.presentation.models.BadRequest;
 

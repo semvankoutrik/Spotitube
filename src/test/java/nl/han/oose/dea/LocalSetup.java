@@ -1,6 +1,6 @@
 package nl.han.oose.dea;
 
-import nl.han.oose.dea.auth.service.AuthService;
+import nl.han.oose.dea.auth.services.AuthService;
 import nl.han.oose.dea.domain.entities.Playlist;
 import nl.han.oose.dea.domain.entities.PlaylistTrack;
 import nl.han.oose.dea.domain.entities.User;

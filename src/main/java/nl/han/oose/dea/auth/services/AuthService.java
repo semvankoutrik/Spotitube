@@ -1,4 +1,4 @@
-package nl.han.oose.dea.auth.service;
+package nl.han.oose.dea.auth.services;
 
 import jakarta.inject.Inject;
 import nl.han.oose.dea.auth.exceptions.InvalidTokenException;
@@ -47,7 +47,7 @@ public class AuthService {
         return JwtHandler.validate(token, signingKey);
     }
 
-    public boolean checkPassword(User user, String password) {
+    private boolean checkPassword(User user, String password) {
         byte[] salt = Base64.getDecoder().decode(user.getPasswordSalt());
         byte[] storedHash = Base64.getDecoder().decode(user.getPasswordHash());
 

@@ -6,12 +6,12 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
-import nl.han.oose.dea.auth.models.AuthContext;
+import nl.han.oose.dea.auth.services.AuthContext;
 import nl.han.oose.dea.auth.annotations.Authorize;
 import nl.han.oose.dea.auth.exceptions.InvalidTokenException;
 import nl.han.oose.dea.auth.models.AuthenticatedUser;
 import nl.han.oose.dea.auth.models.Claim;
-import nl.han.oose.dea.auth.service.AuthService;
+import nl.han.oose.dea.auth.services.AuthService;
 import nl.han.oose.dea.auth.shared.ClaimTypes;
 
 import java.util.List;

@@ -1,6 +1,7 @@
-package nl.han.oose.dea.auth.models;
+package nl.han.oose.dea.auth.services;
 
 import jakarta.enterprise.context.RequestScoped;
+import nl.han.oose.dea.auth.models.AuthenticatedUser;
 
 @RequestScoped
 public class AuthContext {
